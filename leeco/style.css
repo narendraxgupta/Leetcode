@@ -1,0 +1,578 @@
+body {
+  background-image: url("https://i.pinimg.com/originals/fd/b2/1c/fdb21c0e4f3dbb6ccd9a63c68fce8645.gif");
+  background-size: cover; /* Scale the background image to cover the element */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-attachment: fixed; /* Optional: makes the background fixed during scrolling */
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  margin: 0; /* Removes default margin provided by browsers */
+  padding: 0; /* Removes default padding */
+}
+
+/* Thin Scrollbar for Company Dropdown */
+.company-dropdown {
+  max-height: 200px; /* Adjust the height as needed */
+  overflow-y: auto;
+}
+
+.company-dropdown::-webkit-scrollbar {
+  width: 4px; /* Set the width of the scrollbar */
+}
+
+.company-dropdown::-webkit-scrollbar-track {
+  background-color: transparent; /* Set the background color of the scrollbar track */
+}
+
+.company-dropdown::-webkit-scrollbar-thumb {
+  background-color: #6b7280; /* Set the color of the scrollbar thumb */
+  border-radius: 2px; /* Add rounded corners to the scrollbar thumb */
+}
+
+.difficulty-easy {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 10px;
+  font-size: 0.75rem;
+  border-radius: 15px;
+  text-align: center;
+  text-transform: capitalize;
+  font-weight: bold;
+  color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #27ae60; /* Soft green for easy */
+}
+
+.difficulty-easy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.difficulty-medium {
+  display: inline-block;
+  margin: 10px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  border-radius: 15px;
+  text-align: center;
+  text-transform: capitalize;
+  font-weight: bold;
+  color: #fff;
+  background-color: #f39c12; /* Amber for medium */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.difficulty-medium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.difficulty-hard {
+  display: inline-block;
+  margin: 10px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  border-radius: 15px;
+  text-align: center;
+  text-transform: capitalize;
+  font-weight: bold;
+  color: #fff;
+  background-color: #c0392b; /* Soft red for hard */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.difficulty-hard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* For WebKit browsers (e.g. Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #333; /* Color of the scrollbar track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Rounded ends */
+}
+.styled-table {
+  border-collapse: collapse;
+  margin: 25px 0px;
+  font-size: 0.95em;
+  font-family: sans-serif;
+  width: 100%;
+  box-shadow: 0 0 20px rgba(8, 7, 7, 0.15);
+}
+
+.styled-table tr {
+  background-color: #009879;
+  color: black;
+  text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+}
+
+/* Date Solved column - wider width */
+.styled-table td:last-child,
+.styled-table th:last-child {
+  min-width: 180px;
+  width: 200px;
+}
+
+.styled-table tr:nth-of-type(odd) {
+  background-color: #fff6f6;
+}
+.styled-table tr:nth-of-type(even) {
+  background-color: #f6f5f2;
+}
+
+.styled-table tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+.frequency-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-right: 5px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.high-frequency {
+  color: white;
+  background-color: #ff204e;
+}
+
+.medium-frequency {
+  color: white;
+
+  background-color: #ff9300;
+}
+
+.low-frequency {
+  color: white;
+
+  background-color: #1fab89;
+}
+
+.frequency-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+img {
+  vertical-align: middle;
+  height: 24px;
+  margin-right: 10px;
+}
+
+canvas{
+  margin: 75px 0px;
+}
+
+
+#options {
+  display: none;
+  margin-left: 90%;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+#problemsSolvedPerDay{
+  display: none;
+}
+
+#problemsSolvedByHour{
+  display: none;
+}
+
+.drawer{
+  color: black;
+}
+
+
+
+/* Media queries for responsiveness */
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .flex-wrap {
+        justify-content: space-between; /* Adjust spacing on wider screens */
+    }
+
+    .select-dropdown {
+        width: auto; /* Auto width for select boxes on wider screens */
+    }
+}
+
+@media (max-width: 767px) {
+    .flex-wrap {
+        flex-direction: column; /* Stack elements vertically on smaller screens */
+    }
+
+    .relative {
+        margin-bottom: 20px; /* Add space between stacked elements */
+    }
+
+    #dropdownMenu {
+        width: 100%; /* Make dropdown menu full width on smaller screens */
+    }
+}
+
+/* Additional responsive settings for very small screens */
+@media (max-width: 480px) {
+    .select-dropdown {
+        padding: 10px; /* Larger padding for easier interaction */
+    }
+}
+
+@media (max-width: 792px) {
+    #analysisBtn{
+        padding: auto;
+        margin: 10px 0px;
+    }
+}
+
+@media (max-width: 1050px){
+    @media (min-width: 768px) {
+      #company-select, #duration-select, #sort-select{
+        margin-bottom: 20px;
+      }
+    }
+}
+
+
+.row-count-display {
+  padding: 12px 24px;
+  margin-top: 20px;
+  background-color: #3239b6;
+  border-radius: 25px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  color: #ffffff;
+  width: 40%;
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.row-count-display:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.content-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.row-count-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.progress-text {
+  font-size: 1rem;
+}
+
+
+.progress-bar-container {
+  width: 100%;
+  background-color: #1c1e2b;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 15px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #39ff14; /* Neon green color */
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px #39ff14, 0 0 20px #39ff14;
+}
+
+/* Tooltip styling */
+.tooltip-text {
+  visibility: hidden;
+  background-color: #333;
+  color: #ffffff;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  position: absolute;
+  top: 75px; /* Position above the progress bar */
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.row-count-display:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Tooltip arrow */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  bottom: -8px; /* Arrow pointing down */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* Responsive Styles */
+@media (max-width: 792px) {
+  .row-count-display {
+    font-size: 1rem;
+    width: 90%;
+  }
+}
+
+@media (min-width: 793px) and (max-width: 1400px) {
+  .row-count-display {
+    width: 55%;
+    font-size: 1rem;
+  }
+}
+
+#summaryHeading{
+  margin-bottom: 50px;
+  font-size: 3rem;
+  color: white;
+  text-align: center;
+}
+
+
+@media (max-width: 792px){
+  .frequency-tag{
+    margin: 2px;
+  }
+}
+
+@media (max-width: 792px){
+  #feedback-box, #shortcut-box{
+    margin: 0% 5%;
+    margin-bottom: 20px;
+  }
+
+}
+
+
+#shortcut-box {
+  max-width: 500px;
+}
+
+#shortcut-box .flex.items-center {
+  padding-left: 20px; /* Adjust padding as needed for alignment */
+}
+
+#shortcut-box .space-y-4 > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+#shortcut-box .space-y-4 > div span:first-child {
+  flex-shrink: 0;
+}
+
+#shortcut-box .text-gray-300 {
+  margin-left: 10px;
+  text-align: left;
+  flex: 1; /* Ensures the description aligns consistently */
+}
+
+#shortcut-box .bg-gray-700 {
+  min-width: 70px; /* Ensures a uniform width for key labels */
+  text-align: center;
+}
+
+
+
+/* Recommendation Container below the search bar */
+.recommendations-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+/* Search recommendation dropdown styling */
+#id-search + div[class*="absolute"] {
+  position: absolute !important;
+  z-index: 9999 !important;
+  background-color: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 15rem !important;
+  overflow-y: auto !important;
+}
+
+.recommendations-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recommendations-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recommendations-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.recommendation-item:last-child {
+  border-bottom: none;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s;
+}
+
+.modal.hidden {
+  display: none !important;
+}
+
+.modal:not(.hidden) {
+  display: block !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: #1f2937;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close {
+  color: #9ca3af;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: #fff;
+}
+
+/* Auth Section Styles */
+#auth-section {
+  background-color: transparent;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+#user-info {
+  display: none;
+}
+
+#user-info.flex {
+  display: flex;
+}
+
+/* Form Input Styles */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  color: #fff;
+  transition: all 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button Hover Effects */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Error Message Styles */
+.text-red-500 {
+  color: #ef4444;
+}
+
+.text-green-500 {
+  color: #10b981;
+}
+
+/* Success Message */
+.success-message {
+  background-color: #10b981;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+}

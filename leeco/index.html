@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Prepare for software engineering interviews with our extensive collection of LeetCode questions categorized by company. Access coding challenges and solutions tailored for interviews at top tech companies like Google, Amazon, Facebook, Apple, Netflix, and more."
+    />
+    <meta
+      name="keywords"
+      content="LeetCode, LeetCode questions by company, coding interview prep, software engineering interview, FAANG interview questions, top tech companies interview prep, Google interview questions, Amazon interview questions, Facebook interview questions, Apple interview questions, Netflix interview questions, Microsoft interview questions, algorithm problems, data structure questions, coding practice, interview guide, technical interviews, problem-solving, software developer interview prep, SDE interviews, tech job preparation, coding challenge solutions, computer science interviews, tech hiring"
+    />
+    <meta name="author" content="Narendra" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      property="og:title"
+      content="LeetCode Company-Wise Interview Questions and Solutions"
+    />
+    <meta
+      property="og:description"
+      content="Access categorized LeetCode interview questions for top tech companies. Optimize your preparation for software engineering roles at Google, Amazon, Facebook, Apple, and more."
+    />
+    <meta property="og:image" content="data-science.png" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://company-wise-leetcode-narendra.netlify.app/"
+    />
+    <title>LeetCode Company Questions</title>
+    <link
+      rel="shortcut icon"
+      href="https://img.icons8.com/?size=100&id=19293&format=png"
+      type="image/x-icon"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/css/multi-select-tag.css"
+    />
+    <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/js/multi-select-tag.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      integrity="sha512-...the_CDN_link..."
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="auth.js"></script>
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-RFX0N9X8Y1"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-RFX0N9X8Y1");
+  </script>
+
+  <body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4">
+      <!-- Auth Section -->
+      <div id="auth-section" class="flex justify-end items-center py-4">
+        <div id="auth-buttons" class="space-x-3">
+          <button id="login-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            Login
+          </button>
+          <button id="register-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            Register
+          </button>
+        </div>
+        <div id="user-info" class="hidden items-center space-x-4">
+          <span id="username-display" class="text-lg font-semibold"></span>
+          <button id="edit-profile-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+            Edit Profile
+          </button>
+          <button id="change-password-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+            Change Password
+          </button>
+          <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <h1 class="text-5xl font-bold text-center mb-8 my-10 py-6">
+        Company-wise Leetcode Problems
+      </h1>
+
+      <!-- Dropdowns -->
+      <div
+        class="flex flex-wrap items-center justify-center mb-8 space-x-4 py-5"
+      >
+        <div class="relative">
+          <select
+            id="company-select"
+            class="select-dropdown appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700 pr-8 company-dropdown"
+          >
+            <option value="">Select a Company</option>
+          </select>
+          <i
+            data-feather="chevron-down"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          ></i>
+        </div>
+        <div class="relative">
+          <select
+            id="duration-select"
+            class="select-dropdown appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700 pr-8"
+          >
+            <option value="">Select Duration</option>
+          </select>
+          <i
+            data-feather="chevron-down"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          ></i>
+        </div>
+        <div class="relative">
+          <select
+            id="sort-select"
+            class="select-dropdown appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700 pr-8"
+          >
+            <option value="">Sort By</option>
+            <option value="difficulty-asc">Difficulty Ascending</option>
+            <option value="difficulty-desc">Difficulty Descending</option>
+            <option value="frequency-asc">Frequency Ascending</option>
+            <option value="frequency-desc">Frequency Descending</option>
+          </select>
+          <i
+            data-feather="chevron-down"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          ></i>
+        </div>
+        <div class="relative">
+          <select
+            id="difficulty-filter"
+            class="select-dropdown appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700 pr-8"
+          >
+            <option value="">Filter by Difficulty</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          <i
+            data-feather="chevron-down"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          ></i>
+        </div>
+        <div class="relative" style="display: flex; position: relative;">
+          <div style="position: relative; flex: 1;">
+            <input
+              type="text"
+              id="id-search"
+              class="appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700"
+              placeholder="Search by Question..."
+            />
+          </div>
+          <button
+            id="search-button"
+            class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            style="display: flex"
+          >
+            <i data-feather="search" class="mr-2"></i>
+            <span>Search</span>
+          </button>
+        </div>
+        <button
+          id="analysisBtn"
+          class="px-4 py-2 rounded-lg bg-purple-700 hover:bg-purple-600 text-white focus:outline-none focus:bg-purple-800 flex items-center space-x-2"
+        >
+          <i data-feather="bar-chart-2" class="mr-2"></i>
+          Analysis
+        </button>
+        <div class="relative">
+          <button
+            id="dropdownButton"
+            class="bg-pink-500 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            Add <span class="ml-2">+</span>
+          </button>
+          <div
+            id="dropdownMenu"
+            class="hidden absolute bg-gray-800 shadow-lg rounded-lg mt-2 w-48"
+          >
+            <ul>
+              <li
+                class="p-3 hover:bg-gray-600 cursor-pointer"
+                onclick="toggleNewEntryForm()"
+              >
+                New Entry
+              </li>
+              <li
+                class="p-3 hover:bg-gray-600 cursor-pointer py-3"
+                onclick="showSummary()"
+              >
+                Summary
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <button
+          id="clear-button"
+          class="px-4 py-2 rounded-lg bg-red-700 hover:bg-red-600 text-white focus:outline-none focus:bg-red-800 flex items-center space-x-2"
+        >
+          <i data-feather="x-circle"></i>
+          <span>Clear</span>
+        </button>
+
+        <br />
+        <br />
+        <br />
+        <br />
+        <div id="options">
+          <select
+            id="timeFrame"
+            class="select-dropdown appearance-none bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:bg-gray-700 pr-8"
+          >
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 1 Month</option>
+            <option value="month-wise">Month-wise</option>
+          </select>
+        </div>
+        <canvas id="problemsSolvedPerDay"></canvas>
+        <canvas id="problemsSolvedByHour"></canvas>
+      </div>
+
+      <!-- Company Logo and Current Selection -->
+      <div class="flex items-center justify-center mb-8 space-x-4">
+        <img
+          id="company-logo"
+          class="company-image h-16 w-16 rounded-full"
+          src=""
+          alt="Company Logo"
+          style="display: none"
+        />
+        <span id="current-selection" class="text-lg font-semibold"></span>
+      </div>
+
+      <!-- Table Container -->
+      <div
+        id="table-container"
+        class="styled-table table-container overflow-x-auto"
+      >
+        <!-- Table will be dynamically generated here -->
+      </div>
+    </div>
+    <div id="newEntryForm" class="hidden mt-4 mx-auto w-full max-w-md">
+      <div class="text-white" style="font-size: 36px; text-align: center">
+        <span class="mx-2">New Question?</span><i class="fa-solid fa-plus"></i>
+      </div>
+      <br /><br />
+      <input
+        type="text"
+        id="uniqueId"
+        placeholder="Enter LeetCode Question ID"
+        class="border border-gray-300 text-black p-2 rounded-lg w-full mb-2"
+      />
+      <select id="companies" style="color: black">
+        <option value="None">N/A</option>
+        <option value="Google">Google</option>
+        <option value="Microsoft">Microsoft</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Apple">Apple</option>
+        <option value="Netflix">Netflix</option>
+        <option value="Adobe">Adobe</option>
+        <option value="Salesforce">Salesforce</option>
+        <option value="Oracle">Oracle</option>
+        <option value="Uber">Uber</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="Twitter">Twitter</option>
+        <option value="Snapchat">Snapchat</option>
+        <option value="Yahoo">Yahoo</option>
+        <option value="Splinkr">Splinkr</option>
+        <option value="Atlassian">Atlassian</option>
+        <option value="eBay">eBay</option>
+        <option value="PayPal">PayPal</option>
+        <option value="Spotify">Spotify</option>
+        <option value="Airbnb">Airbnb</option>
+        <option value="Dropbox">Dropbox</option>
+        <option value="Intel">Intel</option>
+        <option value="IBM">IBM</option>
+        <option value="Tesla">Tesla</option>
+        <option value="Nvidia">Nvidia</option>
+        <option value="Samsung">Samsung</option>
+        <option value="Qualcomm">Qualcomm</option>
+        <option value="Bloomberg">Bloomberg</option>
+        <option value="Expedia">Expedia</option>
+        <option value="Lyft">Lyft</option>
+        <option value="Yelp">Yelp</option>
+        <option value="Reddit">Reddit</option>
+        <option value="Square">Square</option>
+        <option value="Visa">Visa</option>
+        <option value="Mastercard">Mastercard</option>
+        <option value="Goldman Sachs">Goldman Sachs</option>
+        <option value="Morgan Stanley">Morgan Stanley</option>
+        <option value="Cisco">Cisco</option>
+        <option value="Citrix">Citrix</option>
+        <option value="Vmware">Vmware</option>
+        <option value="Shopify">Shopify</option>
+        <option value="Pinterest">Pinterest</option>
+        <option value="Stripe">Stripe</option>
+        <option value="Robinhood">Robinhood</option>
+        <option value="Coinbase">Coinbase</option>
+        <option value="Riot Games">Riot Games</option>
+        <option value="Epic Games">Epic Games</option>
+        <option value="Palantir">Palantir</option>
+        <option value="Nutanix">Nutanix</option>
+        <option value="Slack">Slack</option>
+        <option value="Twitch">Twitch</option>
+        <option value="Fidelity Investments">Fidelity Investments</option>
+        <option value="Schwab">Schwab</option>
+        <option value="American Express">American Express</option>
+        <option value="Capital One">Capital One</option>
+        <option value="J.P. Morgan">J.P. Morgan</option>
+        <option value="BlackRock">BlackRock</option>
+        <option value="The Bank of New York Mellon">
+          The Bank of New York Mellon
+        </option>
+        <option value="State Street Corporation">
+          State Street Corporation
+        </option>
+        <option value="PNC Financial Services">PNC Financial Services</option>
+        <option value="TD Bank">TD Bank</option>
+        <option value="HSBC">HSBC</option>
+        <option value="Barclays">Barclays</option>
+        <option value="Credit Suisse">Credit Suisse</option>
+        <option value="Deutsche Bank">Deutsche Bank</option>
+        <option value="UBS">UBS</option>
+        <option value="Wells Fargo">Wells Fargo</option>
+        <option value="Zillow">Zillow</option>
+        <option value="Wayfair">Wayfair</option>
+        <option value="Akamai">Akamai</option>
+        <option value="MathWorks">MathWorks</option>
+        <option value="Duolingo">Duolingo</option>
+        <option value="Zynga">Zynga</option>
+        <option value="HubSpot">HubSpot</option>
+        <option value="Twilio">Twilio</option>
+        <option value="DocuSign">DocuSign</option>
+        <option value="Etsy">Etsy</option>
+        <option value="Groupon">Groupon</option>
+        <option value="DoorDash">DoorDash</option>
+        <option value="Grubhub">Grubhub</option>
+        <option value="Postmates">Postmates</option>
+        <option value="Instacart">Instacart</option>
+        <option value="Asana">Asana</option>
+        <option value="Blue Apron">Blue Apron</option>
+        <option value="Zoom">Zoom</option>
+        <option value="Hulu">Hulu</option>
+        <option value="Activision Blizzard">Activision Blizzard</option>
+        <option value="Electronic Arts">Electronic Arts</option>
+      </select>
+      <br />
+      <button
+        onclick="storeData()"
+        class="bg-green-500 text-white px-4 py-2 rounded-lg w-full"
+      >
+        Submit
+      </button>
+    </div>
+
+    <div class="flex justify-center items-center w-full">
+      <div id="summaryTable" class="hidden table-container overflow-x-auto">
+        <h1 id="summaryHeading">Summary</h1>
+        <div id="questionCountBanner" class="question-count-banner"></div>
+        <table class="w-full border-collapse border border-gray-300 mx-auto">
+          <thead>
+            <tr
+              style="
+                background-color: #0f67b1;
+                color: white;
+                border-bottom: 0px;
+              "
+            >
+              <th class="border border-gray-300 text-center">Unique ID</th>
+              <th class="border border-gray-300 text-center">
+                Name of the Problem
+              </th>
+              <th class="border border-gray-300 text-center">Link</th>
+              <th class="border border-gray-300 text-center">Difficulty</th>
+              <th class="border border-gray-300 text-center">Companies</th>
+              <th class="border border-gray-300 text-center">Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div
+      id="shortcut-box"
+      class="bg-gray-800 text-white py-8 px-6 md:px-12 lg:px-16 rounded-xl shadow-2xl max-w-xl mx-auto mt-10 relative"
+    >
+      <button
+        id="close-shortcut-btn"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-xl font-bold"
+      >
+        &times;
+      </button>
+
+      <h2 class="text-2xl font-semibold text-center mb-4">
+        Keyboard Shortcuts
+      </h2>
+      <p class="text-center text-gray-400 mb-6">
+        Quickly navigate and use features with these shortcuts:
+      </p>
+
+      <div class="space-y-4">
+        <!-- Shortcut 1 -->
+        <div
+          class="flex items-center justify-between border-b border-gray-700 pb-2"
+        >
+          <div class="flex items-center space-x-3">
+            <span class="bg-gray-700 py-1 px-3 rounded-md font-mono text-sm"
+              >Ctrl + M</span
+            >
+          </div>
+          <span class="text-gray-300">Clear everything</span>
+        </div>
+
+        <!-- Shortcut 2 -->
+        <div
+          class="flex items-center justify-between border-b border-gray-700 pb-2"
+        >
+          <div class="flex items-center space-x-3">
+            <span class="bg-gray-700 py-1 px-3 rounded-md font-mono text-sm"
+              >/</span
+            >
+          </div>
+          <span class="text-gray-300">Focus on search bar</span>
+        </div>
+
+        <!-- Shortcut 3 -->
+        <div
+          class="flex items-center justify-between border-b border-gray-700 pb-2"
+        >
+          <div class="flex items-center space-x-3">
+            <span class="bg-gray-700 py-1 px-3 rounded-md font-mono text-sm"
+              >Enter</span
+            >
+          </div>
+          <span class="text-gray-300"
+            >Search by LeetCode question ID or name to find which companies have
+            asked it</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- <div
+      id="feedback-box"
+      class="bg-gray-800 text-white py-12 px-8 md:px-16 lg:px-20 rounded-xl shadow-2xl max-w-2xl mx-auto mt-10 relative"
+    >
+      <button
+        id="close-btn"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-xl font-bold"
+      >
+        &times;
+      </button>
+
+      <h2 class="text-3xl font-semibold text-center mb-6">
+        Let me know what you think!
+      </h2>
+      <p class="text-center text-gray-400 mb-8">
+        Help me improve by sharing your thoughts and rating your experience.
+      </p>
+
+      <form action="" method="POST">
+        <textarea
+          id="suggestion"
+          name="message"
+          rows="7"
+          class="w-full px-4 py-3 text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:border-yellow-500 resize-none shadow-sm"
+          placeholder="Write your experience or suggestion here..."
+          required
+        ></textarea>
+
+        <label for="rating" class="block text-lg font-medium mt-6 mb-3"
+          >Rate your experience:</label
+        >
+        <div class="flex justify-center space-x-3 mb-6" id="star-rating">
+          <input
+            type="radio"
+            id="star1"
+            name="rating"
+            value="1"
+            class="hidden"
+          />
+          <label
+            for="star1"
+            title="Worst"
+            class="star text-4xl cursor-pointer hover:text-yellow-500"
+            >&#9733;</label
+          >
+
+          <input
+            type="radio"
+            id="star2"
+            name="rating"
+            value="2"
+            class="hidden"
+          />
+          <label
+            for="star2"
+            title="Bad"
+            class="star text-4xl cursor-pointer hover:text-yellow-500"
+            >&#9733;</label
+          >
+
+          <input
+            type="radio"
+            id="star3"
+            name="rating"
+            value="3"
+            class="hidden"
+          />
+          <label
+            for="star3"
+            title="Neutral"
+            class="star text-4xl cursor-pointer hover:text-yellow-500"
+            >&#9733;</label
+          >
+
+          <input
+            type="radio"
+            id="star4"
+            name="rating"
+            value="4"
+            class="hidden"
+          />
+          <label
+            for="star4"
+            title="Good"
+            class="star text-4xl cursor-pointer hover:text-yellow-500"
+            >&#9733;</label
+          >
+
+          <input
+            type="radio"
+            id="star5"
+            name="rating"
+            value="5"
+            class="hidden"
+          />
+          <label
+            for="star5"
+            title="Awesome"
+            class="star text-4xl cursor-pointer hover:text-yellow-500"
+            >&#9733;</label
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-yellow-500 text-gray-900 font-semibold py-3 rounded-lg hover:bg-yellow-600 transition duration-300 ease-in-out shadow-md"
+        >
+          Send Feedback
+        </button>
+      </form>
+    </div> -->
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('login-modal')">&times;</span>
+        <h2 class="text-3xl font-bold mb-6 text-center text-white">Login</h2>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input type="email" id="login-email" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your email">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Password</label>
+            <input type="password" id="login-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your password">
+          </div>
+          <div id="login-error" class="text-red-500 text-sm hidden"></div>
+          <button type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
+            Login
+          </button>
+          <p class="text-center text-sm text-gray-400">
+            Don't have an account? 
+            <a href="#" onclick="switchToRegister()" class="text-blue-400 hover:text-blue-300">Register here</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('register-modal')">&times;</span>
+        <h2 class="text-3xl font-bold mb-6 text-center text-white">Register</h2>
+        <form id="register-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Username</label>
+            <input type="text" id="register-username" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Choose a username" minlength="3" maxlength="30">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input type="email" id="register-email" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Enter your email">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Password</label>
+            <input type="password" id="register-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Choose a password" minlength="6">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Confirm Password</label>
+            <input type="password" id="register-confirm-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Confirm your password" minlength="6">
+          </div>
+          <div id="register-error" class="text-red-500 text-sm hidden"></div>
+          <button type="submit" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition">
+            Register
+          </button>
+          <p class="text-center text-sm text-gray-400">
+            Already have an account? 
+            <a href="#" onclick="switchToLogin()" class="text-green-400 hover:text-green-300">Login here</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('edit-profile-modal')">&times;</span>
+        <h2 class="text-3xl font-bold mb-6 text-center text-white">Edit Profile</h2>
+        <form id="edit-profile-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Username</label>
+            <input type="text" id="edit-username" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Your username" minlength="3" maxlength="30">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input type="email" id="edit-email" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Your email">
+          </div>
+          <div id="edit-profile-error" class="text-red-500 text-sm hidden"></div>
+          <button type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
+            Update Profile
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('change-password-modal')">&times;</span>
+        <h2 class="text-3xl font-bold mb-6 text-center text-white">Change Password</h2>
+        <form id="change-password-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Current Password</label>
+            <input type="password" id="current-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Enter current password">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">New Password</label>
+            <input type="password" id="new-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Enter new password" minlength="6">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Confirm New Password</label>
+            <input type="password" id="confirm-new-password" required 
+              class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Confirm new password" minlength="6">
+          </div>
+          <div id="change-password-error" class="text-red-500 text-sm hidden"></div>
+          <button type="submit" 
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-lg font-semibold transition">
+            Change Password
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <br />
+    <div>
+      <footer class="text-center py-4 text-white-400">
+        <p>
+          Built <i class="fas fa-tools text-white-500"></i> by
+          <a
+            href="https://github.com/narendraxgupta"
+            target="_blank"
+            onclick="gtag('event', 'click', {'event_category': 'Link', 'event_label': 'GitHub Link'});"
+            class="text-yellow-500"
+          >
+            Narendra
+          </a>
+        </p>
+        <br />
+        <br />
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      feather.replace();
+    </script>
+    <script
+      src="https://kit.fontawesome.com/795c004276.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </body>
+</html>
