@@ -1697,3 +1697,742 @@ document.addEventListener("keydown", function (event) {
 document.getElementById("close-shortcut-btn").addEventListener("click", function () {
   document.getElementById("shortcut-box").style.display = "none";
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <----------------- Background Settings Functionality ----------------->
+// Initialize background on page load
+document.addEventListener("DOMContentLoaded", function () {
+  loadSavedBackground();
+  initializeBackgroundSettings();
+  loadSavedProfilePicture();
+  initializeProfilePicture();
+});
+
+// Load saved background from localStorage
+function loadSavedBackground() {
+  const savedBgType = localStorage.getItem("bgType");
+  const savedBgValue = localStorage.getItem("bgValue");
+
+  if (savedBgType && savedBgValue) {
+    applyBackground(savedBgType, savedBgValue);
+  }
+}
+
+// Apply background to body
+function applyBackground(type, value) {
+  const body = document.body;
+
+  // Reset all background properties
+  body.style.backgroundImage = "";
+  body.style.background = "";
+  body.style.backgroundColor = "";
+
+  if (type === "default") {
+    body.style.backgroundColor = "#000000";
+    body.style.backgroundImage = "";
+    body.style.backgroundSize = "cover";
+    body.style.backgroundPosition = "center";
+    body.style.backgroundRepeat = "no-repeat";
+    body.style.backgroundAttachment = "fixed";
+  } else if (type === "gradient") {
+    body.style.background = value;
+    body.style.backgroundAttachment = "fixed";
+  } else if (type === "solid") {
+    body.style.backgroundColor = value;
+  } else if (type === "custom") {
+    // Apply custom uploaded image
+    body.style.backgroundImage = `url("${value}")`;
+    body.style.backgroundSize = "cover";
+    body.style.backgroundPosition = "center";
+    body.style.backgroundRepeat = "no-repeat";
+    body.style.backgroundAttachment = "fixed";
+  }
+
+  // Update selected state in modal
+  updateSelectedBackground(type, value);
+}
+
+// Update selected state in background options
+function updateSelectedBackground(type, value) {
+  const options = document.querySelectorAll(".background-option");
+  options.forEach((option) => {
+    option.classList.remove("selected");
+
+    const optionType = option.getAttribute("data-bg-type");
+    const optionValue = option.getAttribute("data-bg-value");
+
+    if (type === "default" && optionType === "default") {
+      option.classList.add("selected");
+    } else if (optionType === type && optionValue === value) {
+      option.classList.add("selected");
+    }
+  });
+}
+
+// Initialize background settings functionality
+function initializeBackgroundSettings() {
+  // Open background settings modal
+  document.getElementById("background-settings-btn")?.addEventListener("click", function () {
+    openModal("background-settings-modal");
+    // Update selected state when modal opens
+    const savedBgType = localStorage.getItem("bgType") || "default";
+    const savedBgValue = localStorage.getItem("bgValue") || "";
+    updateSelectedBackground(savedBgType, savedBgValue);
+    
+    // Show custom image preview if exists
+    if (savedBgType === "custom") {
+      showCustomImagePreview(savedBgValue);
+    }
+    
+    // Re-initialize feather icons for the modal
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  });
+
+  // Add click handlers to all background options
+  const backgroundOptions = document.querySelectorAll(".background-option");
+  backgroundOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      const bgType = this.getAttribute("data-bg-type");
+      const bgValue = this.getAttribute("data-bg-value") || "";
+
+      // Apply the background
+      applyBackground(bgType, bgValue);
+
+      // Save to localStorage
+      localStorage.setItem("bgType", bgType);
+      localStorage.setItem("bgValue", bgValue);
+
+      // Show success notification
+      showNotification("Background changed successfully!", "success");
+    });
+  });
+
+  // Handle custom image upload
+  const fileInput = document.getElementById("custom-bg-upload");
+  if (fileInput) {
+    fileInput.addEventListener("change", handleCustomImageUpload);
+  }
+
+  // Initialize tab functionality
+  initializeBackgroundTabs();
+  
+  // Remove auto-loading of gallery images
+  
+  // Add Enter key listener for URL input
+  document.getElementById("image-url-input")?.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      applyImageFromUrl();
+    }
+  });
+  
+  // Add Enter key listener for gallery search
+  document.getElementById("gallery-search-input")?.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      searchGalleryImages();
+    }
+  });
+}
+
+// Initialize background tabs
+function initializeBackgroundTabs() {
+  const tabs = {
+    'tab-upload': 'upload-content',
+    'tab-url': 'url-content',
+    'tab-unsplash': 'unsplash-content'
+  };
+
+  Object.keys(tabs).forEach(tabId => {
+    const tabButton = document.getElementById(tabId);
+    if (tabButton) {
+      tabButton.addEventListener('click', function() {
+        // Remove active class from all tabs
+        Object.keys(tabs).forEach(id => {
+          document.getElementById(id)?.classList.remove('active');
+          document.getElementById(id)?.classList.add('text-gray-400');
+          document.getElementById(id)?.classList.remove('text-white');
+        });
+        
+        // Add active class to clicked tab
+        this.classList.add('active');
+        this.classList.remove('text-gray-400');
+        this.classList.add('text-white');
+        
+        // Hide all tab contents
+        Object.values(tabs).forEach(contentId => {
+          document.getElementById(contentId)?.classList.add('hidden');
+        });
+        
+        // Show corresponding content
+        document.getElementById(tabs[tabId])?.classList.remove('hidden');
+        
+        // Re-initialize feather icons
+        if (typeof feather !== 'undefined') {
+          feather.replace();
+        }
+      });
+    }
+  });
+}
+
+// Handle custom image upload
+function handleCustomImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showNotification("Please upload a valid image file (JPG, PNG, GIF, WebP)", "error");
+    return;
+  }
+
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  if (file.size > maxSize) {
+    showNotification("Image size should be less than 5MB", "error");
+    return;
+  }
+
+  // Update file name display
+  document.getElementById("file-name").textContent = file.name;
+
+  // Read the file as base64
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const imageData = e.target.result;
+    
+    // Show preview
+    showCustomImagePreview(imageData);
+    
+    // Apply the background
+    applyBackground("custom", imageData);
+    
+    // Save to localStorage
+    localStorage.setItem("bgType", "custom");
+    localStorage.setItem("bgValue", imageData);
+    
+    // Show success notification
+    showNotification("Custom background applied successfully!", "success");
+  };
+  
+  reader.onerror = function() {
+    showNotification("Failed to read image file", "error");
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+// Show custom image preview
+function showCustomImagePreview(imageData) {
+  const previewContainer = document.getElementById("custom-bg-preview-container");
+  const previewImg = document.getElementById("custom-bg-preview");
+  
+  if (previewContainer && previewImg && imageData) {
+    previewImg.src = imageData;
+    previewContainer.classList.remove("hidden");
+    
+    // Re-initialize feather icons for the close button
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  }
+}
+
+// Remove custom background
+function removeCustomBackground() {
+  // Hide preview
+  const previewContainer = document.getElementById("custom-bg-preview-container");
+  if (previewContainer) {
+    previewContainer.classList.add("hidden");
+  }
+  
+  // Reset file input
+  const fileInput = document.getElementById("custom-bg-upload");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+  
+  // Reset file name
+  document.getElementById("file-name").textContent = "No file chosen";
+  
+  // Reset URL input
+  const urlInput = document.getElementById("image-url-input");
+  if (urlInput) {
+    urlInput.value = "";
+  }
+  
+  // Reset to default background
+  resetBackground();
+}
+
+// Apply image from URL
+function applyImageFromUrl() {
+  const urlInput = document.getElementById("image-url-input");
+  const imageUrl = urlInput?.value.trim();
+  
+  if (!imageUrl) {
+    showNotification("Please enter an image URL", "warning");
+    return;
+  }
+  
+  // Validate URL format
+  try {
+    new URL(imageUrl);
+  } catch (e) {
+    showNotification("Please enter a valid URL", "error");
+    return;
+  }
+  
+  // Check if it's likely an image URL
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+  const isImageUrl = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext)) || 
+                     imageUrl.includes('unsplash.com') || 
+                     imageUrl.includes('pexels.com') || 
+                     imageUrl.includes('pixabay.com') ||
+                     imageUrl.includes('images.') ||
+                     imageUrl.includes('photo');
+  
+  if (!isImageUrl) {
+    // Still allow but show warning
+    console.warn("URL might not be an image");
+  }
+  
+  // Test if image loads
+  const testImg = new Image();
+  testImg.onload = function() {
+    // Show preview
+    showCustomImagePreview(imageUrl);
+    
+    // Apply the background
+    applyBackground("custom", imageUrl);
+    
+    // Save to localStorage
+    localStorage.setItem("bgType", "custom");
+    localStorage.setItem("bgValue", imageUrl);
+    
+    // Show success notification
+    showNotification("Background applied successfully!", "success");
+  };
+  
+  testImg.onerror = function() {
+    showNotification("Failed to load image from URL. Please check the URL and try again.", "error");
+  };
+  
+  testImg.src = imageUrl;
+}
+
+// Load gallery images based on category
+function loadGalleryImages(category = 'nature') {
+  const gridDiv = document.getElementById("unsplash-grid");
+  
+  if (!gridDiv) return;
+  
+  // Show loading state
+  gridDiv.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-4"><i data-feather="loader" class="inline-block animate-spin"></i> Loading images...</div>';
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+  
+  const images = [];
+  const imageCount = 12;
+  
+  // Use Lorem Picsum with random IDs
+  for (let i = 0; i < imageCount; i++) {
+    // Generate random image ID between 0-1084
+    const randomId = Math.floor(Math.random() * 1085);
+    
+    const thumbUrl = `https://picsum.photos/id/${randomId}/400/300`;
+    const fullUrl = `https://picsum.photos/id/${randomId}/1920/1080`;
+    
+    images.push({
+      thumb: thumbUrl,
+      full: fullUrl,
+      photographer: `Photo #${randomId}`
+    });
+  }
+  
+  // Display images immediately
+  displayUnsplashResults(images);
+  
+  // Show success notification
+  showNotification(`Loaded ${category} images`, "success");
+}
+
+// Search gallery images by ID only (no keyword search)
+function searchGalleryImages() {
+  const searchInput = document.getElementById("gallery-search-input");
+  const query = searchInput?.value.trim();
+  
+  if (!query) {
+    showNotification("Please enter an image ID (0-1084)", "warning");
+    return;
+  }
+  
+  const gridDiv = document.getElementById("unsplash-grid");
+  
+  if (!gridDiv) return;
+  
+  // Show loading state
+  gridDiv.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-4"><i data-feather="loader" class="inline-block animate-spin"></i> Searching...</div>';
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+  
+  // Only accept numeric IDs
+  const isNumericId = /^\d+$/.test(query);
+  
+  if (!isNumericId) {
+    gridDiv.innerHTML = '<div class="col-span-3 text-center text-yellow-400 py-4">Please enter a number (0-1084). Use category buttons for random images.</div>';
+    showNotification("Enter image ID number only", "warning");
+    return;
+  }
+  
+  const imageId = parseInt(query);
+  
+  // Validate ID range
+  if (imageId < 0 || imageId > 1084) {
+    gridDiv.innerHTML = '<div class="col-span-3 text-center text-red-400 py-4">Image ID should be between 0 and 1084</div>';
+    showNotification("Invalid image ID. Try 0-1084", "error");
+    return;
+  }
+  
+  // Load specific image and similar ones
+  const images = [];
+  
+  // Show the requested image and 11 related ones
+  for (let i = 0; i < 12; i++) {
+    const id = imageId + i;
+    const thumbUrl = `https://picsum.photos/id/${id}/400/300`;
+    const fullUrl = `https://picsum.photos/id/${id}/1920/1080`;
+    
+    images.push({
+      thumb: thumbUrl,
+      full: fullUrl,
+      photographer: `Photo #${id}`
+    });
+  }
+  
+  displayUnsplashResults(images);
+  showNotification(`Showing images starting from ID ${imageId}`, "success");
+}
+
+// Load gallery images using seed for consistent results based on category/keyword
+// Make function globally accessible
+window.searchGalleryImages = searchGalleryImages;
+
+// Make function globally accessible
+window.loadGalleryImages = loadGalleryImages;
+
+// Search Unsplash for images (deprecated - keeping for compatibility)
+async function searchUnsplash() {
+  // Redirect to gallery with random category
+  loadGalleryImages('random');
+}
+
+// Display Unsplash search results
+function displayUnsplashResults(images) {
+  const gridDiv = document.getElementById("unsplash-grid");
+  
+  if (!gridDiv) return;
+  
+  gridDiv.innerHTML = "";
+  
+  if (images.length === 0) {
+    gridDiv.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-4">No images found. Try a different search term.</div>';
+    return;
+  }
+  
+  images.forEach((image, index) => {
+    const imgContainer = document.createElement("div");
+    imgContainer.className = "relative";
+    
+    const img = document.createElement("img");
+    img.src = image.thumb || image;
+    img.alt = `Unsplash image ${index + 1}`;
+    img.className = "unsplash-image w-full";
+    img.loading = "lazy";
+    
+    // Handle image load error
+    img.onerror = function() {
+      this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='80'%3E%3Crect fill='%23374151' width='100' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='12'%3EImage unavailable%3C/text%3E%3C/svg%3E";
+    };
+    
+    img.onclick = function() {
+      // Use full size URL if available, otherwise use the original URL
+      const fullSizeUrl = image.full || image;
+      
+      // Show preview
+      showCustomImagePreview(fullSizeUrl);
+      
+      // Apply the background
+      applyBackground("custom", fullSizeUrl);
+      
+      // Save to localStorage
+      localStorage.setItem("bgType", "custom");
+      localStorage.setItem("bgValue", fullSizeUrl);
+      
+      // Show success notification with photographer credit if available
+      if (image.photographer) {
+        showNotification(`Background by ${image.photographer} applied!`, "success");
+      } else {
+        showNotification("Unsplash background applied!", "success");
+      }
+      
+      // Visual feedback
+      img.style.borderColor = "#10b981";
+      setTimeout(() => {
+        img.style.borderColor = "transparent";
+      }, 1000);
+    };
+    
+    imgContainer.appendChild(img);
+    gridDiv.appendChild(imgContainer);
+  });
+  
+  // Re-initialize feather icons
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+}
+
+// Make functions globally accessible
+window.applyImageFromUrl = applyImageFromUrl;
+window.searchUnsplash = searchUnsplash;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <----------------- Profile Picture Functionality ----------------->
+// Load saved profile picture
+function loadSavedProfilePicture() {
+  const savedAvatar = localStorage.getItem("userAvatar");
+  const savedAvatarType = localStorage.getItem("userAvatarType");
+  
+  if (savedAvatar && savedAvatarType) {
+    updateUserAvatar(savedAvatarType, savedAvatar);
+  }
+}
+
+// Update user avatar display
+function updateUserAvatar(type, value) {
+  const avatarElement = document.getElementById("user-avatar");
+  
+  if (!avatarElement) return;
+  
+  if (type === "emoji") {
+    avatarElement.innerHTML = value;
+    avatarElement.style.backgroundImage = "";
+    avatarElement.style.fontSize = "28px";
+  } else if (type === "image") {
+    avatarElement.innerHTML = "";
+    avatarElement.style.backgroundImage = `url("${value}")`;
+    avatarElement.style.backgroundSize = "cover";
+    avatarElement.style.backgroundPosition = "center";
+  }
+}
+
+// Initialize profile picture functionality
+function initializeProfilePicture() {
+  // Initialize profile picture tabs
+  const profileTabs = {
+    'tab-emoji': 'emoji-content',
+    'tab-avatar-upload': 'avatar-upload-content'
+  };
+
+  Object.keys(profileTabs).forEach(tabId => {
+    const tabButton = document.getElementById(tabId);
+    if (tabButton) {
+      tabButton.addEventListener('click', function() {
+        // Remove active class from all tabs
+        Object.keys(profileTabs).forEach(id => {
+          document.getElementById(id)?.classList.remove('active');
+          document.getElementById(id)?.classList.add('text-gray-400');
+          document.getElementById(id)?.classList.remove('text-white');
+        });
+        
+        // Add active class to clicked tab
+        this.classList.add('active');
+        this.classList.remove('text-gray-400');
+        this.classList.add('text-white');
+        
+        // Hide all tab contents
+        Object.values(profileTabs).forEach(contentId => {
+          document.getElementById(contentId)?.classList.add('hidden');
+        });
+        
+        // Show corresponding content
+        document.getElementById(profileTabs[tabId])?.classList.remove('hidden');
+        
+        // Re-initialize feather icons
+        if (typeof feather !== 'undefined') {
+          feather.replace();
+        }
+      });
+    }
+  });
+
+  // Handle avatar image upload
+  const avatarInput = document.getElementById("avatar-upload");
+  if (avatarInput) {
+    avatarInput.addEventListener("change", handleAvatarUpload);
+  }
+}
+
+// Select emoji as profile picture
+function selectEmoji(emoji) {
+  // Update avatar display
+  updateUserAvatar("emoji", emoji);
+  
+  // Save to localStorage
+  localStorage.setItem("userAvatar", emoji);
+  localStorage.setItem("userAvatarType", "emoji");
+  
+  // Visual feedback - highlight selected emoji
+  const emojiButtons = document.querySelectorAll(".emoji-option");
+  emojiButtons.forEach(btn => btn.classList.remove("selected"));
+  event.target.classList.add("selected");
+  
+  // Show success notification
+  showNotification("Profile picture updated!", "success");
+  
+  // Close modal after a short delay
+  setTimeout(() => {
+    closeModal('profile-picture-modal');
+  }, 800);
+}
+
+// Handle avatar image upload
+function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showNotification("Please upload a valid image file (JPG, PNG, GIF, WebP)", "error");
+    return;
+  }
+
+  // Validate file size (max 2MB)
+  const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+  if (file.size > maxSize) {
+    showNotification("Image size should be less than 2MB", "error");
+    return;
+  }
+
+  // Update file name display
+  document.getElementById("avatar-file-name").textContent = file.name;
+
+  // Read the file as base64
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const imageData = e.target.result;
+    
+    // Show preview
+    showAvatarPreview(imageData);
+    
+    // Update avatar display
+    updateUserAvatar("image", imageData);
+    
+    // Save to localStorage
+    localStorage.setItem("userAvatar", imageData);
+    localStorage.setItem("userAvatarType", "image");
+    
+    // Show success notification
+    showNotification("Profile picture updated!", "success");
+  };
+  
+  reader.onerror = function() {
+    showNotification("Failed to read image file", "error");
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+// Show avatar preview
+function showAvatarPreview(imageData) {
+  const previewContainer = document.getElementById("avatar-preview-container");
+  const previewImg = document.getElementById("avatar-preview");
+  
+  if (previewContainer && previewImg && imageData) {
+    previewImg.src = imageData;
+    previewContainer.classList.remove("hidden");
+    
+    // Re-initialize feather icons for the close button
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  }
+}
+
+// Remove avatar image
+function removeAvatarImage() {
+  // Hide preview
+  const previewContainer = document.getElementById("avatar-preview-container");
+  if (previewContainer) {
+    previewContainer.classList.add("hidden");
+  }
+  
+  // Reset file input
+  const avatarInput = document.getElementById("avatar-upload");
+  if (avatarInput) {
+    avatarInput.value = "";
+  }
+  
+  // Reset file name
+  document.getElementById("avatar-file-name").textContent = "No file chosen";
+  
+  // Reset to default avatar
+  const defaultEmoji = "👤";
+  updateUserAvatar("emoji", defaultEmoji);
+  localStorage.setItem("userAvatar", defaultEmoji);
+  localStorage.setItem("userAvatarType", "emoji");
+  
+  showNotification("Profile picture reset to default", "info");
+}
+
+// Make functions globally accessible
+window.selectEmoji = selectEmoji;
+window.removeAvatarImage = removeAvatarImage;
+
+// Make removeCustomBackground globally accessible
+window.removeCustomBackground = removeCustomBackground;
+
+// Reset background to default
+function resetBackground() {
+  applyBackground("default", "");
+  localStorage.removeItem("bgType");
+  localStorage.removeItem("bgValue");
+  showNotification("Background reset to default", "info");
+}
+
+// Make resetBackground globally accessible
+window.resetBackground = resetBackground;

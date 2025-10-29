@@ -235,7 +235,18 @@ function showUserInfo() {
   const userInfo = document.getElementById('user-info');
   userInfo.classList.remove('hidden');
   userInfo.classList.add('flex');
-  document.getElementById('username-display').textContent = `👤 ${currentUser.username}`;
+  
+  // Hide username display, only show avatar
+  const usernameDisplay = document.getElementById('username-display');
+  if (usernameDisplay) {
+    usernameDisplay.style.display = 'none';
+  }
+  
+  // Set avatar title to show username on hover
+  const avatar = document.getElementById('user-avatar');
+  if (avatar && currentUser) {
+    avatar.setAttribute('title', currentUser.username);
+  }
 }
 
 // Show auth buttons in navbar

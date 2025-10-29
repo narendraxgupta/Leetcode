@@ -1,5 +1,5 @@
 body {
-  background-image: url("https://i.pinimg.com/originals/fd/b2/1c/fdb21c0e4f3dbb6ccd9a63c68fce8645.gif");
+  background-color: #000000;
   background-size: cover; /* Scale the background image to cover the element */
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Do not repeat the image */
@@ -575,4 +575,302 @@ button:active {
   border-radius: 8px;
   margin-bottom: 15px;
   text-align: center;
+}
+
+/* Background Settings Modal */
+.background-option {
+  cursor: pointer;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  padding: 8px;
+  transition: all 0.3s ease;
+  background-color: #374151;
+}
+
+.background-option:hover {
+  border-color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.background-option.selected {
+  border-color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.bg-preview {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.background-option p {
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+#background-settings-btn {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+#background-settings-btn:hover {
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+}
+
+/* Custom Background Upload Styles */
+#custom-bg-preview-container {
+  transition: all 0.3s ease;
+}
+
+#custom-bg-preview {
+  transition: transform 0.3s ease;
+}
+
+#custom-bg-preview:hover {
+  transform: scale(1.02);
+}
+
+#file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+/* Background Tab Styles */
+.bg-tab {
+  background-color: transparent;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.bg-tab:hover {
+  color: #93c5fd;
+}
+
+.bg-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Unsplash Grid Styles */
+#unsplash-grid {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+#unsplash-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+#unsplash-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#unsplash-grid::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.unsplash-image {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  height: 80px;
+  object-fit: cover;
+}
+
+.unsplash-image:hover {
+  transform: scale(1.05);
+  border-color: #60a5fa;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+/* Image URL Input Styles */
+#image-url-input {
+  font-size: 14px;
+}
+
+#image-url-input::placeholder {
+  color: #9ca3af;
+}
+
+#image-url-input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Gallery Category Buttons */
+.gallery-category-btn {
+  background-color: #4b5563;
+  color: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.gallery-category-btn:hover {
+  background-color: #6366f1;
+  border-color: #818cf8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.gallery-category-btn:active {
+  transform: translateY(0);
+}
+
+/* Profile Picture Styles */
+#user-avatar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+#user-avatar:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Profile Picture Modal Tabs */
+.profile-tab {
+  background-color: transparent;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.profile-tab:hover {
+  color: #93c5fd;
+}
+
+.profile-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+/* Emoji Options */
+.emoji-option {
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background-color: #374151;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.emoji-option:hover {
+  background-color: #4b5563;
+  border-color: #60a5fa;
+  transform: scale(1.1);
+}
+
+.emoji-option:active {
+  transform: scale(0.95);
+}
+
+.emoji-option.selected {
+  border-color: #10b981;
+  background-color: #065f46;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Avatar Preview */
+#avatar-preview-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+#avatar-preview {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Scrollbar for emoji grid */
+.grid.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.grid.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.grid.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+
+.bg-gray-700 {
+  border: 2px solid #4b5563;
+  transition: border-color 0.3s ease;
+}
+
+.bg-gray-700:hover {
+  border-color: #6b7280;
+}
+
+/* Upload button animation */
+button[onclick*="custom-bg-upload"] {
+  position: relative;
+  overflow: hidden;
+}
+
+button[onclick*="custom-bg-upload"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button[onclick*="custom-bg-upload"]:active::after {
+  width: 300px;
+  height: 300px;
 }
