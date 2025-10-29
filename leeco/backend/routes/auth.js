@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { sendPasswordResetLink } = require('../utils/emailService');
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -277,6 +278,156 @@ router.put('/change-password', [
     res.status(500).json({ 
       success: false, 
       message: 'Server error during password change' 
+    });
+  }
+});
+
+// @route   POST /api/auth/forgot-password
+// @desc    Send password reset email (simplified version)
+// @access  Public
+router.post('/forgot-password', [
+  body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: errors.array()[0].msg 
+      });
+    }
+
+    const { email } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // For security, don't reveal if email exists or not
+      return res.json({
+        success: true,
+        message: 'If an account with that email exists, a password reset link has been sent.'
+      });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { userId: user._id, email: user.email, purpose: 'password-reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Check if email is configured
+    const isEmailConfigured = process.env.EMAIL_USER && 
+                              process.env.EMAIL_PASSWORD && 
+                              process.env.EMAIL_USER !== 'yourname@gmail.com';
+
+    if (isEmailConfigured) {
+      // Send reset link via email
+      try {
+        await sendPasswordResetLink(email, user.username, resetToken);
+        console.log('Password reset link sent successfully to:', email);
+        
+        res.json({
+          success: true,
+          message: 'A password reset link has been sent to your email.'
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        console.log('Reset token for', email, ':', resetToken);
+        
+        res.status(500).json({
+          success: false,
+          message: 'Failed to send email. Please try again later.'
+        });
+      }
+    } else {
+      // Email not configured - return link directly
+      const resetUrl = `http://localhost:3000/reset-password.html?token=${resetToken}`;
+      console.log('Email not configured. Reset link for:', email);
+      console.log('Reset URL:', resetUrl);
+      
+      res.json({
+        success: true,
+        message: 'Click the link to reset your password.',
+        resetLink: resetUrl // Send link directly in response
+      });
+    }
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again later.' 
+    });
+  }
+});
+
+// @route   POST /api/auth/reset-password
+// @desc    Reset password with token
+// @access  Public
+router.post('/reset-password', [
+  body('token').notEmpty().withMessage('Token is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: errors.array()[0].msg 
+      });
+    }
+
+    const { token, newPassword } = req.body;
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Check if token is for password reset
+      if (decoded.purpose !== 'password-reset') {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid reset token'
+        });
+      }
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset link'
+      });
+    }
+
+    // Find user and update password
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update password (plain text as per your current implementation)
+    user.password = newPassword;
+    await user.save();
+
+    console.log('Password reset successful for user:', user.email);
+
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully! You can now login with your new password.'
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again later.' 
     });
   }
 });

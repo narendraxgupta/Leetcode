@@ -567,3 +567,73 @@ async function handleChangePassword(e) {
   }
 }
 
+// Forgot Password Functions
+function openForgotPasswordModal() {
+  closeModal('login-modal');
+  openModal('forgot-password-modal');
+}
+
+function backToLogin() {
+  closeModal('forgot-password-modal');
+  openModal('login-modal');
+}
+
+// Make forgot password functions globally accessible
+window.openForgotPasswordModal = openForgotPasswordModal;
+window.backToLogin = backToLogin;
+
+// Handle forgot password form submission
+async function handleForgotPassword(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('forgot-email').value;
+  const messageDiv = document.getElementById('forgot-password-message');
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Check if reset link was returned (email not configured)
+      if (data.resetLink) {
+        messageDiv.innerHTML = `<strong>Click the link to reset your password:</strong><br><a href="${data.resetLink}" target="_blank" class="text-blue-400 hover:underline">${data.resetLink}</a>`;
+        messageDiv.classList.remove('hidden', 'text-red-500');
+        messageDiv.classList.add('text-green-500');
+        
+        // Show notification
+        showNotification('Reset link generated! Click it to reset your password.', 'success');
+      } else {
+        messageDiv.textContent = data.message || 'Password reset link has been sent to your email.';
+        messageDiv.classList.remove('hidden', 'text-red-500');
+        messageDiv.classList.add('text-green-500');
+        
+        // Show success notification
+        showNotification('Check your email for the reset link!', 'success');
+      }
+      
+      // Clear form
+      document.getElementById('forgot-password-form').reset();
+    } else {
+      messageDiv.textContent = data.message || 'Failed to send reset link.';
+      messageDiv.classList.remove('hidden', 'text-green-500');
+      messageDiv.classList.add('text-red-500');
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    messageDiv.textContent = 'Server error. Please try again.';
+    messageDiv.classList.remove('hidden', 'text-green-500');
+    messageDiv.classList.add('text-red-500');
+  }
+}
+
+// Setup forgot password form listener
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('forgot-password-form')?.addEventListener('submit', handleForgotPassword);
+});
