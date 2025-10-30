@@ -16,7 +16,7 @@
   <meta property="og:image" content="data-science.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://company-wise-leetcode-narendra.netlify.app/" />
-  <title>LeetCode Company Questions</title>
+  <title>LeetCode Buddy</title>
   <link rel="shortcut icon" href="https://img.icons8.com/?size=100&id=19293&format=png" type="image/x-icon" />
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/css/multi-select-tag.css" />
@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <!-- Load config first to set environment variables -->
+  <script src="config.js"></script>
   <script src="auth.js"></script>
 </head>
 
@@ -1068,6 +1070,38 @@
   </div>
 
   <br />
+  <!-- Notes & Snippets Modal -->
+  <div id="notes-modal" class="modal hidden">
+    <div class="modal-content" style="max-width:900px;">
+      <span class="close" onclick="closeModal('notes-modal')">&times;</span>
+      <h2 class="text-2xl font-bold mb-4 text-white">Problem Notes & Snippets</h2>
+
+      <div id="notes-modal-body">
+        <div class="mb-4">
+          <label class="block text-sm text-gray-300 mb-2">Notes</label>
+          <textarea id="problem-notes" rows="6" class="w-full px-3 py-2 bg-gray-800 text-white rounded-lg" placeholder="Write your notes here..."></textarea>
+        </div>
+
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-white mb-2">Code Snippets</h3>
+          <div id="snippets-list" class="space-y-3 mb-3"></div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <input id="snippet-title" placeholder="Snippet title" class="px-3 py-2 bg-gray-800 text-white rounded-lg" />
+            <input id="snippet-lang" placeholder="Language (javascript/python/c++)" class="px-3 py-2 bg-gray-800 text-white rounded-lg" />
+            <button id="add-snippet-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">Add Snippet</button>
+          </div>
+          <textarea id="snippet-code" rows="6" class="w-full mt-3 px-3 py-2 bg-gray-800 text-white rounded-lg" placeholder="Paste your code here..."></textarea>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button id="save-notes-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save</button>
+          <button id="toggle-revision-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg">Add to Revision Queue</button>
+          <button onclick="closeModal('notes-modal')" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div>
     <footer class="text-center py-4 text-white-400">
       <p>

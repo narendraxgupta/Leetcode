@@ -1,3 +1,11 @@
+// <----------------- Constants ----------------->
+// File size limits
+const MAX_BACKGROUND_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_AVATAR_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
+// Valid image types
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
 // <----------------- Dropdown Functionality ----------------->
 // Accessing the dropdown elements
 const companySelect = document.getElementById("company-select");
@@ -5,6 +13,52 @@ const durationSelect = document.getElementById("duration-select");
 const sortSelect = document.getElementById("sort-select");
 const difficultyFilter = document.getElementById("difficulty-filter");
 const currentSelection = document.getElementById("current-selection");
+
+// Modal helper functions
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+// Make modal functions globally available
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+// Notification helper function
+function showNotification(message, type = 'info') {
+  if (typeof Swal !== 'undefined') {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    });
+    
+    Toast.fire({
+      icon: type === 'error' ? 'error' : type === 'success' ? 'success' : 'info',
+      title: message
+    });
+  } else {
+    alert(message);
+  }
+}
+
+// Make showNotification globally available
+window.showNotification = showNotification;
 
 // Helper function to get current company and duration selection
 function getCurrentSelection() {
@@ -24,6 +78,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to initialize the dropdowns
 function initializeDropdowns(companyData) {
+  if (!companySelect || !durationSelect) {
+    console.error('Required dropdown elements not found');
+    return;
+  }
+  
   Object.keys(companyData).forEach((company) => {
     const option = document.createElement("option");
     option.value = company;
@@ -294,90 +353,176 @@ function displayTable(csvData, sort, difficulty) {
 
         cellElement.appendChild(dateInput);
       } else if (index > 0 && cellIndex === cells.length - 1) {
-        // Button for 'Mark Solved'
-        const button = document.createElement("button");
-        button.id = `solved-${cells[0]}`;
-        button.classList.add("bg-green-600", "hover:bg-green-700", "text-white", "px-3", "py-1", "rounded", "text-sm", "font-semibold", "transition");
-        
-        // Check if problem is already marked as solved
-        let isSolved = false;
+        // Actions cell: bookmark, notes, mark solved
+        const actionsWrap = document.createElement("div");
+        actionsWrap.classList.add("flex", "items-center", "justify-center", "space-x-2");
+
+        const bookmarkBtn = document.createElement("button");
+        bookmarkBtn.classList.add("px-2", "py-1", "rounded", "text-sm");
+        bookmarkBtn.title = "Bookmark";
+        bookmarkBtn.innerHTML = "<i class=\"fas fa-bookmark\"></i>";
+
+        const notesBtn = document.createElement("button");
+        notesBtn.classList.add("px-2", "py-1", "rounded", "text-sm");
+        notesBtn.title = "Notes & Snippets";
+        notesBtn.innerHTML = "<i class=\"fas fa-sticky-note\"></i>";
+
+        const markBtn = document.createElement("button");
+        markBtn.id = `solved-${cells[0]}`;
+        markBtn.classList.add("bg-green-600", "hover:bg-green-700", "text-white", "px-3", "py-1", "rounded", "text-sm", "font-semibold", "transition");
+
+        // Check auth and solved state
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        let isSolved = false;
         if (token && window.solvedProblems && Array.isArray(window.solvedProblems)) {
           isSolved = window.solvedProblems.some(p => p.problemId === cells[0]);
         }
-        
+
         if (isSolved) {
-          button.textContent = "✓ Solved";
-          button.classList.remove("bg-green-600", "hover:bg-green-700");
-          button.classList.add("bg-gray-600", "hover:bg-gray-700");
+          markBtn.textContent = "✓ Solved";
+          markBtn.classList.remove("bg-green-600", "hover:bg-green-700");
+          markBtn.classList.add("bg-gray-600", "hover:bg-gray-700");
         } else {
-          button.textContent = "Mark Solved";
+          markBtn.textContent = "Mark Solved";
         }
-        
-        // Only show button for authenticated users
+
         if (!token) {
-          button.disabled = true;
-          button.classList.add("opacity-50", "cursor-not-allowed");
-          button.title = "Login to track progress";
+          markBtn.disabled = true;
+          markBtn.classList.add("opacity-50", "cursor-not-allowed");
+          markBtn.title = "Login to track progress";
         }
-        
-        button.addEventListener("click", async function () {
-          // Check if user is authenticated
+
+        // Bookmark state
+        let isBookmarked = false;
+        if (token && window.solvedProblems) {
+          const p = window.solvedProblems.find(p => p.problemId === cells[0]);
+          isBookmarked = p ? !!p.isBookmarked : false;
+        }
+        if (isBookmarked) {
+          bookmarkBtn.classList.add("text-yellow-400");
+        } else {
+          bookmarkBtn.classList.add("text-gray-300");
+        }
+
+        // Bookmark handler
+        bookmarkBtn.addEventListener("click", async () => {
+          console.log('Bookmark button clicked');
+          try {
+            if (!window.dashboardFunctions) {
+              console.error('window.dashboardFunctions not available');
+              if (typeof showNotification !== 'undefined') showNotification('Dashboard not loaded. Please refresh the page.', 'error');
+              return;
+            }
+            if (!window.dashboardFunctions.toggleBookmark) {
+              console.error('toggleBookmark function not available');
+              if (typeof showNotification !== 'undefined') showNotification('Bookmark function not available. Please refresh the page.', 'error');
+              return;
+            }
+            const problemId = cells[0];
+            const meta = { title: cells[2], difficulty: cells[3], company: getCurrentSelection().company, duration: getCurrentSelection().duration };
+            console.log('Calling toggleBookmark with:', { problemId, meta });
+            const result = await window.dashboardFunctions.toggleBookmark(problemId, meta);
+            console.log('toggleBookmark result:', result);
+            if (result && result.success) {
+              isBookmarked = result.isBookmarked;
+              bookmarkBtn.classList.toggle("text-yellow-400", isBookmarked);
+              bookmarkBtn.classList.toggle("text-gray-300", !isBookmarked);
+              if (typeof showNotification !== 'undefined') showNotification(isBookmarked ? 'Bookmarked' : 'Bookmark removed', 'success');
+            } else {
+              if (typeof showNotification !== 'undefined') showNotification(result.message || 'Failed to toggle bookmark', 'error');
+            }
+          } catch (error) {
+            console.error('Bookmark click error:', error);
+            if (typeof showNotification !== 'undefined') showNotification('Error: ' + error.message, 'error');
+          }
+        });
+
+        // Notes handler
+        notesBtn.addEventListener("click", async () => {
+          console.log('=== Notes button clicked ===');
+          
+          const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+          console.log('Token exists:', !!token);
+          
+          if (!token) {
+            console.error('No token found');
+            showNotification('Please login to edit notes', 'error');
+            return;
+          }
+          
+          console.log('Checking window.dashboardFunctions...');
+          console.log('window.dashboardFunctions exists:', !!window.dashboardFunctions);
+          
+          if (!window.dashboardFunctions) {
+            console.error('❌ window.dashboardFunctions is not defined!');
+            showNotification('Dashboard functions not loaded. Please refresh the page.', 'error');
+            return;
+          }
+          
+          console.log('Checking openNotesModal function...');
+          console.log('openNotesModal exists:', !!window.dashboardFunctions.openNotesModal);
+          console.log('openNotesModal type:', typeof window.dashboardFunctions.openNotesModal);
+          
+          if (!window.dashboardFunctions.openNotesModal) {
+            console.error('❌ openNotesModal function not available!');
+            console.log('Available functions:', Object.keys(window.dashboardFunctions));
+            showNotification('Notes function not loaded. Please refresh the page.', 'error');
+            return;
+          }
+          
+          const problemId = cells[0];
+          const meta = { 
+            title: cells[2], 
+            difficulty: cells[3], 
+            company: getCurrentSelection().company, 
+            duration: getCurrentSelection().duration 
+          };
+          
+          console.log('✅ Calling openNotesModal with:', { problemId, meta });
+          
+          try {
+            await window.dashboardFunctions.openNotesModal(problemId, meta);
+            console.log('✅ openNotesModal completed');
+          } catch (error) {
+            console.error('❌ Error calling openNotesModal:', error);
+            showNotification('Error opening notes: ' + error.message, 'error');
+          }
+        });
+
+        // Mark solved handler
+        markBtn.addEventListener("click", async function () {
           const token = localStorage.getItem('authToken') || localStorage.getItem('token');
           if (!token) {
-            if (typeof showNotification !== 'undefined') {
-              showNotification('Please login to track your progress', 'error');
-            } else {
-              alert('Please login to track your progress');
-            }
+            if (typeof showNotification !== 'undefined') showNotification('Please login to track your progress', 'error');
             return;
           }
-          
-          // Check if dashboard functions are available
+
           if (!window.dashboardFunctions || !window.dashboardFunctions.markProblemAsSolved) {
-            console.error('Dashboard functions not loaded');
-            if (typeof showNotification !== 'undefined') {
-              showNotification('Dashboard functions not loaded. Please refresh the page.', 'error');
-            }
+            if (typeof showNotification !== 'undefined') showNotification('Dashboard functions not loaded. Please refresh the page.', 'error');
             return;
           }
-          
+
           const problemId = cells[0];
           const title = cells[2];
           const difficulty = cells[3];
           const leetcodeLink = cells[1];
           const { company, duration } = getCurrentSelection();
-          
+
           if (this.textContent === "Mark Solved") {
-            // Mark as solved
-            const success = await window.dashboardFunctions.markProblemAsSolved({
-              problemId,
-              title,
-              difficulty,
-              company,
-              duration,
-              leetcodeLink
-            });
-            
+            const success = await window.dashboardFunctions.markProblemAsSolved({ problemId, title, difficulty, company, duration, leetcodeLink });
             if (success) {
               this.textContent = "✓ Solved";
               this.classList.remove("bg-green-600", "hover:bg-green-700");
               this.classList.add("bg-gray-600", "hover:bg-gray-700");
-              
-              // Update solved problems list
               if (!window.solvedProblems) window.solvedProblems = [];
               window.solvedProblems.push({ problemId, title, difficulty, company, duration });
             }
           } else {
-            // Unmark as solved
             const success = await window.dashboardFunctions.unmarkProblemAsSolved(problemId);
-            
             if (success) {
               this.textContent = "Mark Solved";
               this.classList.remove("bg-gray-600", "hover:bg-gray-700");
               this.classList.add("bg-green-600", "hover:bg-green-700");
-              
-              // Remove from solved problems list
               if (window.solvedProblems) {
                 window.solvedProblems = window.solvedProblems.filter(p => p.problemId !== problemId);
               }
@@ -385,7 +530,10 @@ function displayTable(csvData, sort, difficulty) {
           }
         });
 
-        cellElement.appendChild(button);
+        actionsWrap.appendChild(bookmarkBtn);
+        actionsWrap.appendChild(notesBtn);
+        actionsWrap.appendChild(markBtn);
+        cellElement.appendChild(actionsWrap);
       } else if (index > 0 && cellIndex === 1) {
         // Handling link cells (URL is now at index 1)
         cellElement.style.display = "flex";
@@ -1463,14 +1611,21 @@ function updateCharts() {
 
 
 // <----------------- New Entry Functionality ----------------->
-document
-  .getElementById("dropdownButton")
-  .addEventListener("click", function () {
-    document.getElementById("dropdownMenu").classList.toggle("hidden");
+const dropdownButton = document.getElementById("dropdownButton");
+if (dropdownButton) {
+  dropdownButton.addEventListener("click", function () {
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    if (dropdownMenu) {
+      dropdownMenu.classList.toggle("hidden");
+    }
   });
+}
 
 function toggleNewEntryForm() {
-  document.getElementById("newEntryForm").classList.toggle("hidden");
+  const newEntryForm = document.getElementById("newEntryForm");
+  if (newEntryForm) {
+    newEntryForm.classList.toggle("hidden");
+  }
 }
 
 let selectedCompanies = [];
@@ -1704,69 +1859,7 @@ async function showSummary() {
 
 
 // <----------------- Star Rating and Feedback Box ----------------->
-// To handle star rating interactivity
-// document.addEventListener("DOMContentLoaded", () => {
-//   const stars = document.querySelectorAll(".star");
-//   let selectedRating = -1; // Store the selected rating index
-
-//   stars.forEach((star, index) => {
-//     // Click event to select and color the stars up to the clicked one
-//     star.addEventListener("click", () => {
-//       selectedRating = index; // Update the selected rating index
-//       stars.forEach((s, i) => {
-//         s.style.color = i <= selectedRating ? "#ffc107" : "#cccccc";
-//       });
-//     });
-
-//     // Hover event to temporarily color stars up to the hovered one
-//     star.addEventListener("mouseover", () => {
-//       stars.forEach((s, i) => {
-//         s.style.color = i <= index ? "#ffc107" : "#cccccc";
-//       });
-//     });
-
-//     // Mouseout event to reset stars based on the selected rating
-//     star.addEventListener("mouseout", () => {
-//       stars.forEach((s, i) => {
-//         s.style.color = i <= selectedRating ? "#ffc107" : "#cccccc";
-//       });
-//     });
-//   });
-// });
-
-// // To close the feedback box temporarily
-// document.getElementById("close-btn").addEventListener("click", () => {
-//   const feedbackBox = document.getElementById("feedback-box");
-//   feedbackBox.style.display = "none"; // Hide the feedback box
-// });
-
-// // To clear form after submission
-// document.getElementById("feedback-box").addEventListener("submit", (e) => {
-//   e.preventDefault(); // Prevent form's default submission
-//   e.target.submit();  // Submit the form data to Formspree
-//   e.target.reset();   // Reset the form fields after submission
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Star rating functionality has been disabled and removed
 
 // <----------------- Shortcut Keys ----------------->
 
@@ -1829,11 +1922,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Load saved background from localStorage
 function loadSavedBackground() {
-  const savedBgType = localStorage.getItem("bgType");
-  const savedBgValue = localStorage.getItem("bgValue");
+  try {
+    const savedBgType = localStorage.getItem("bgType");
+    const savedBgValue = localStorage.getItem("bgValue");
 
-  if (savedBgType && savedBgValue) {
-    applyBackground(savedBgType, savedBgValue);
+    if (savedBgType && savedBgValue) {
+      applyBackground(savedBgType, savedBgValue);
+    }
+  } catch (error) {
+    console.error('Error loading saved background:', error);
+    // Continue with default background
   }
 }
 
@@ -1920,8 +2018,12 @@ function initializeBackgroundSettings() {
       applyBackground(bgType, bgValue);
 
       // Save to localStorage
-      localStorage.setItem("bgType", bgType);
-      localStorage.setItem("bgValue", bgValue);
+      try {
+        localStorage.setItem("bgType", bgType);
+        localStorage.setItem("bgValue", bgValue);
+      } catch (error) {
+        console.error('Error saving background to localStorage:', error);
+      }
 
       // Show success notification
       showNotification("Background changed successfully!", "success");
@@ -2001,15 +2103,13 @@ function handleCustomImageUpload(event) {
   if (!file) return;
 
   // Validate file type
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  if (!validTypes.includes(file.type)) {
+  if (!VALID_IMAGE_TYPES.includes(file.type)) {
     showNotification("Please upload a valid image file (JPG, PNG, GIF, WebP)", "error");
     return;
   }
 
   // Validate file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-  if (file.size > maxSize) {
+  if (file.size > MAX_BACKGROUND_IMAGE_SIZE) {
     showNotification("Image size should be less than 5MB", "error");
     return;
   }
@@ -2029,8 +2129,14 @@ function handleCustomImageUpload(event) {
     applyBackground("custom", imageData);
     
     // Save to localStorage
-    localStorage.setItem("bgType", "custom");
-    localStorage.setItem("bgValue", imageData);
+    try {
+      localStorage.setItem("bgType", "custom");
+      localStorage.setItem("bgValue", imageData);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      showNotification("Background applied but couldn't be saved (storage full?)", "warning");
+      return;
+    }
     
     // Show success notification
     showNotification("Custom background applied successfully!", "success");
@@ -2118,9 +2224,19 @@ function applyImageFromUrl() {
     console.warn("URL might not be an image");
   }
   
-  // Test if image loads
+  // Test if image loads with timeout
   const testImg = new Image();
+  let loadTimeout;
+  
+  // Set 10 second timeout
+  loadTimeout = setTimeout(() => {
+    testImg.src = ''; // Cancel loading
+    showNotification("Image loading timed out. Please try a different URL or check your connection.", "error");
+  }, 10000);
+  
   testImg.onload = function() {
+    clearTimeout(loadTimeout);
+    
     // Show preview
     showCustomImagePreview(imageUrl);
     
@@ -2128,14 +2244,19 @@ function applyImageFromUrl() {
     applyBackground("custom", imageUrl);
     
     // Save to localStorage
-    localStorage.setItem("bgType", "custom");
-    localStorage.setItem("bgValue", imageUrl);
+    try {
+      localStorage.setItem("bgType", "custom");
+      localStorage.setItem("bgValue", imageUrl);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
     
     // Show success notification
     showNotification("Background applied successfully!", "success");
   };
   
   testImg.onerror = function() {
+    clearTimeout(loadTimeout);
     showNotification("Failed to load image from URL. Please check the URL and try again.", "error");
   };
   
@@ -2353,11 +2474,12 @@ function updateUserAvatar(type, value) {
   if (!avatarElement) return;
   
   if (type === "emoji") {
-    avatarElement.innerHTML = value;
+    // Use textContent to prevent XSS attacks
+    avatarElement.textContent = value;
     avatarElement.style.backgroundImage = "";
     avatarElement.style.fontSize = "28px";
   } else if (type === "image") {
-    avatarElement.innerHTML = "";
+    avatarElement.textContent = "";
     avatarElement.style.backgroundImage = `url("${value}")`;
     avatarElement.style.backgroundSize = "cover";
     avatarElement.style.backgroundPosition = "center";
@@ -2366,6 +2488,15 @@ function updateUserAvatar(type, value) {
 
 // Initialize profile picture functionality
 function initializeProfilePicture() {
+  // Add click event to user avatar to open profile picture modal
+  const userAvatar = document.getElementById('user-avatar');
+  if (userAvatar) {
+    userAvatar.style.cursor = 'pointer';
+    userAvatar.addEventListener('click', function() {
+      openModal('profile-picture-modal');
+    });
+  }
+  
   // Initialize profile picture tabs
   const profileTabs = {
     'tab-emoji': 'emoji-content',
@@ -2440,15 +2571,13 @@ function handleAvatarUpload(event) {
   if (!file) return;
 
   // Validate file type
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  if (!validTypes.includes(file.type)) {
+  if (!VALID_IMAGE_TYPES.includes(file.type)) {
     showNotification("Please upload a valid image file (JPG, PNG, GIF, WebP)", "error");
     return;
   }
 
   // Validate file size (max 2MB)
-  const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-  if (file.size > maxSize) {
+  if (file.size > MAX_AVATAR_IMAGE_SIZE) {
     showNotification("Image size should be less than 2MB", "error");
     return;
   }
@@ -2468,8 +2597,14 @@ function handleAvatarUpload(event) {
     updateUserAvatar("image", imageData);
     
     // Save to localStorage
-    localStorage.setItem("userAvatar", imageData);
-    localStorage.setItem("userAvatarType", "image");
+    try {
+      localStorage.setItem("userAvatar", imageData);
+      localStorage.setItem("userAvatarType", "image");
+    } catch (error) {
+      console.error('Error saving avatar to localStorage:', error);
+      showNotification("Avatar updated but couldn't be saved (storage full?)", "warning");
+      return;
+    }
     
     // Show success notification
     showNotification("Profile picture updated!", "success");

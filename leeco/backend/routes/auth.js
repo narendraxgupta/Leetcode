@@ -344,7 +344,8 @@ router.post('/forgot-password', [
       }
     } else {
       // Email not configured - return link directly
-      const resetUrl = `http://localhost:3000/reset-password.html?token=${resetToken}`;
+      const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+      const resetUrl = `${clientUrl}/reset-password.html?token=${resetToken}`;
       console.log('Email not configured. Reset link for:', email);
       console.log('Reset URL:', resetUrl);
       

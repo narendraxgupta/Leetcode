@@ -7,6 +7,7 @@ const auth = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.log('Auth failed: No token');
       return res.status(401).json({ 
         success: false, 
         message: 'No authentication token, access denied' 
@@ -20,6 +21,7 @@ const auth = async (req, res, next) => {
     const user = await User.findById(decoded.userId);
     
     if (!user) {
+      console.log('Auth failed: User not found');
       return res.status(401).json({ 
         success: false, 
         message: 'User not found, access denied' 
@@ -29,8 +31,10 @@ const auth = async (req, res, next) => {
     // Attach user to request
     req.userId = decoded.userId;
     req.user = user;
+    console.log(`Auth success: User ${req.userId} authenticated for ${req.method} ${req.path}`);
     next();
   } catch (error) {
+    console.log('Auth failed: Invalid token', error.message);
     res.status(401).json({ 
       success: false, 
       message: 'Token is invalid or expired' 

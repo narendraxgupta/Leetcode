@@ -1,5 +1,5 @@
-// Authentication API base URL
-const API_BASE_URL = 'http://localhost:3000/api';
+// Authentication API base URL - dynamically set based on environment
+const API_BASE_URL = window.CONFIG ? window.CONFIG.API_BASE_URL : '/api';
 
 // Authentication state
 let currentUser = null;
@@ -612,6 +612,13 @@ async function handleForgotPassword(e) {
   
   const email = document.getElementById('forgot-email').value;
   const messageDiv = document.getElementById('forgot-password-message');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.textContent;
+  
+  // Show loading state
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending Reset Link...';
+  submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
   
   try {
     const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
@@ -654,6 +661,11 @@ async function handleForgotPassword(e) {
     messageDiv.textContent = 'Server error. Please try again.';
     messageDiv.classList.remove('hidden', 'text-green-500');
     messageDiv.classList.add('text-red-500');
+  } finally {
+    // Restore button state
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalBtnText;
+    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
   }
 }
 

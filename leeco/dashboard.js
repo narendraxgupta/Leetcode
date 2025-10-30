@@ -1,8 +1,26 @@
 // Dashboard Functionality
+console.log('🚀 Dashboard.js is loading...');
+
 let progressChart, difficultyChart, companyChart;
 
-// API Base URL
-const API_URL = 'http://localhost:3000/api';
+// API Base URL - dynamically set based on environment
+const API_URL = window.CONFIG ? window.CONFIG.API_BASE_URL : '/api';
+
+// Export functions IMMEDIATELY (before DOMContentLoaded) so they're available when script.js runs
+console.log('📦 Initializing window.dashboardFunctions...');
+window.dashboardFunctions = {
+  openDashboard: null,  // Will be set after functions are defined
+  markProblemAsSolved: null,
+  unmarkProblemAsSolved: null,
+  checkProblemSolved: null,
+  toggleBookmark: null,
+  openNotesModal: null,
+  saveNotesFromModal: null,
+  addSnippetFromModal: null,
+  deleteSnippetFromModal: null,
+  toggleRevisionQueue: null
+};
+console.log('✅ window.dashboardFunctions object created');
 
 // Initialize Dashboard
 async function initDashboard() {
@@ -474,6 +492,313 @@ async function checkProblemSolved(problemId) {
   }
 }
 
+// Toggle bookmark for a problem
+async function toggleBookmark(problemId, meta = {}) {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) return { success: false, message: 'Not authenticated' };
+
+    const response = await fetch(`${API_URL}/progress/toggle-bookmark/${encodeURIComponent(problemId)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(meta || {})
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Toggle bookmark error:', error);
+    return { success: false, message: 'Server error' };
+  }
+}
+
+// Open notes modal for a problem
+async function openNotesModal(problemId, metadata = {}) {
+  console.log('=== openNotesModal called ===');
+  console.log('Problem ID:', problemId);
+  console.log('Metadata:', metadata);
+  
+  try {
+    console.log('Looking for modal elements...');
+    const modal = document.getElementById('notes-modal');
+    console.log('Modal element:', modal);
+    
+    const notesArea = document.getElementById('problem-notes');
+    console.log('Notes textarea:', notesArea);
+    
+    const snippetsList = document.getElementById('snippets-list');
+    console.log('Snippets list:', snippetsList);
+    
+    const toggleBtn = document.getElementById('toggle-revision-btn');
+    console.log('Toggle button:', toggleBtn);
+    
+    const saveBtn = document.getElementById('save-notes-btn');
+    console.log('Save button:', saveBtn);
+    
+    const addSnippetBtn = document.getElementById('add-snippet-btn');
+    console.log('Add snippet button:', addSnippetBtn);
+
+    if (!modal) {
+      console.error('❌ Modal element #notes-modal not found!');
+      showNotification && showNotification('Modal not found in page', 'error');
+      return;
+    }
+    
+    if (!notesArea) {
+      console.error('❌ Notes textarea #problem-notes not found!');
+      showNotification && showNotification('Notes textarea not found', 'error');
+      return;
+    }
+    
+    console.log('✅ All required elements found');
+
+    // Store metadata for later use
+    modal.dataset.problemId = problemId;
+    modal.dataset.problemMeta = JSON.stringify(metadata);
+
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) {
+      console.error('No auth token found');
+      showNotification && showNotification('Please login to edit notes', 'error');
+      return;
+    }
+
+    console.log('Fetching problem data...');
+    console.log('API_URL:', API_URL);
+    console.log('Full URL:', `${API_URL}/progress/check-solved/${encodeURIComponent(problemId)}`);
+    
+    // Fetch problem details (if exists)
+    const resp = await fetch(`${API_URL}/progress/check-solved/${encodeURIComponent(problemId)}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    console.log('Response status:', resp.status);
+    console.log('Response ok:', resp.ok);
+    
+    if (!resp.ok) {
+      console.error('Fetch failed with status:', resp.status);
+      const errorText = await resp.text();
+      console.error('Error response:', errorText);
+      throw new Error(`HTTP error! status: ${resp.status}`);
+    }
+    
+    const info = await resp.json();
+    console.log('Problem info fetched:', info);
+    console.log('Full info object:', JSON.stringify(info, null, 2));
+    console.log('info.problem:', info.problem);
+    console.log('Type of info.problem:', typeof info.problem);
+    console.log('info.success:', info.success);
+    console.log('info.isSolved:', info.isSolved);
+
+    // Reset UI AFTER we have the data
+    notesArea.value = '';
+    snippetsList.innerHTML = '';
+
+    if (info && info.problem) {
+      const problem = info.problem;
+      console.log('Loading notes:', problem.notes);
+      console.log('Notes length:', problem.notes ? problem.notes.length : 0);
+      notesArea.value = problem.notes || '';
+      toggleBtn.textContent = problem.inRevisionQueue ? 'Remove from Revision Queue' : 'Add to Revision Queue';
+      toggleBtn.dataset.inRevision = problem.inRevisionQueue ? '1' : '0';
+
+      // Render snippets
+      if (Array.isArray(problem.codeSnippets)) {
+        snippetsList.innerHTML = problem.codeSnippets.map(sn => {
+          return `<div class="p-3 bg-gray-800 rounded-lg" data-snippet-id="${sn._id}">
+                    <div class="flex justify-between items-center">
+                      <div class="font-semibold text-white">${escapeHtml(sn.title || 'Solution')} <span class="text-sm text-gray-400">(${escapeHtml(sn.language || '')})</span></div>
+                      <div>
+                        <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs" data-action="delete-snippet" data-snippet-id="${sn._id}">Delete</button>
+                      </div>
+                    </div>
+                    <pre class="whitespace-pre-wrap text-sm text-gray-200 mt-2">${escapeHtml(sn.code || '')}</pre>
+                  </div>`;
+        }).join('');
+      }
+    } else {
+      console.log('No problem data found, showing empty form');
+      toggleBtn.textContent = 'Add to Revision Queue';
+      toggleBtn.dataset.inRevision = '0';
+    }
+
+    // Show modal
+    console.log('Showing modal');
+    modal.classList.remove('hidden');
+
+    // Wire up actions
+    saveBtn.onclick = async () => {
+      await saveNotesFromModal(problemId);
+    };
+
+    addSnippetBtn.onclick = async () => {
+      await addSnippetFromModal(problemId);
+    };
+
+    // Delegate delete snippet clicks
+    snippetsList.onclick = async (e) => {
+      const btn = e.target.closest('button[data-action="delete-snippet"]');
+      if (btn) {
+        const snippetId = btn.dataset.snippetId;
+        await deleteSnippetFromModal(problemId, snippetId);
+        // refresh modal with metadata
+        openNotesModal(problemId, metadata);
+      }
+    };
+
+    toggleBtn.onclick = async () => {
+      const inRev = toggleBtn.dataset.inRevision === '1';
+      await toggleRevisionQueue(problemId, { inRevisionQueue: !inRev });
+      toggleBtn.textContent = inRev ? 'Add to Revision Queue' : 'Remove from Revision Queue';
+      toggleBtn.dataset.inRevision = inRev ? '0' : '1';
+    };
+
+  } catch (error) {
+    console.error('Open notes modal error:', error);
+    showNotification && showNotification('Failed to open notes', 'error');
+  }
+}
+
+async function saveNotesFromModal(problemId) {
+  try {
+    const notes = document.getElementById('problem-notes').value;
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) return showNotification && showNotification('Not authenticated', 'error');
+
+    // Get metadata from modal
+    const modal = document.getElementById('notes-modal');
+    let metadata = {};
+    try {
+      metadata = JSON.parse(modal.dataset.problemMeta || '{}');
+    } catch (e) {
+      console.error('Failed to parse metadata:', e);
+    }
+
+    console.log('Saving notes:', { problemId, notes, metadata });
+
+    const resp = await fetch(`${API_URL}/progress/notes/${encodeURIComponent(problemId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ 
+        notes,
+        title: metadata.title,
+        difficulty: metadata.difficulty,
+        company: metadata.company,
+        duration: metadata.duration
+      })
+    });
+    const data = await resp.json();
+    console.log('Save notes response:', data);
+    if (data.success) {
+      showNotification && showNotification('Notes saved', 'success');
+      document.getElementById('notes-modal').classList.add('hidden');
+    } else {
+      showNotification && showNotification(data.message || 'Failed to save notes', 'error');
+    }
+  } catch (error) {
+    console.error('Save notes error:', error);
+    showNotification && showNotification('Failed to save notes', 'error');
+  }
+}
+
+async function addSnippetFromModal(problemId) {
+  try {
+    const title = document.getElementById('snippet-title').value || 'Solution';
+    const language = document.getElementById('snippet-lang').value || 'javascript';
+    const code = document.getElementById('snippet-code').value || '';
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) return showNotification && showNotification('Not authenticated', 'error');
+
+    // Get metadata from modal
+    const modal = document.getElementById('notes-modal');
+    let metadata = {};
+    try {
+      metadata = JSON.parse(modal.dataset.problemMeta || '{}');
+    } catch (e) {
+      console.error('Failed to parse metadata:', e);
+    }
+
+    const resp = await fetch(`${API_URL}/progress/snippet/${encodeURIComponent(problemId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ 
+        title, 
+        language, 
+        code,
+        problemTitle: metadata.title,
+        difficulty: metadata.difficulty,
+        company: metadata.company,
+        duration: metadata.duration
+      })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      showNotification && showNotification('Snippet added', 'success');
+      // refresh modal with metadata
+      openNotesModal(problemId, metadata);
+    } else {
+      showNotification && showNotification(data.message || 'Failed to add snippet', 'error');
+    }
+  } catch (error) {
+    console.error('Add snippet error:', error);
+    showNotification && showNotification('Failed to add snippet', 'error');
+  }
+}
+
+async function deleteSnippetFromModal(problemId, snippetId) {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) return showNotification && showNotification('Not authenticated', 'error');
+
+    const resp = await fetch(`${API_URL}/progress/snippet/${encodeURIComponent(problemId)}/${encodeURIComponent(snippetId)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await resp.json();
+    if (data.success) {
+      showNotification && showNotification('Snippet deleted', 'success');
+      return true;
+    } else {
+      showNotification && showNotification(data.message || 'Failed to delete snippet', 'error');
+      return false;
+    }
+  } catch (error) {
+    console.error('Delete snippet error:', error);
+    showNotification && showNotification('Failed to delete snippet', 'error');
+    return false;
+  }
+}
+
+async function toggleRevisionQueue(problemId, body = {}) {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) return { success: false };
+
+    const resp = await fetch(`${API_URL}/progress/revision/${encodeURIComponent(problemId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    return await resp.json();
+  } catch (error) {
+    console.error('Toggle revision error:', error);
+    return { success: false };
+  }
+}
+
+// Small helper to escape HTML when rendering snippets
+function escapeHtml(unsafe) {
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Initialize dashboard when DOM loads
 document.addEventListener('DOMContentLoaded', function() {
   initDashboard();
@@ -488,13 +813,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Export functions for use in other scripts
-window.dashboardFunctions = {
-  openDashboard,
-  markProblemAsSolved,
-  unmarkProblemAsSolved,
-  checkProblemSolved
-};
+// Update function references NOW (not in DOMContentLoaded)
+window.dashboardFunctions.openDashboard = openDashboard;
+window.dashboardFunctions.markProblemAsSolved = markProblemAsSolved;
+window.dashboardFunctions.unmarkProblemAsSolved = unmarkProblemAsSolved;
+window.dashboardFunctions.checkProblemSolved = checkProblemSolved;
+window.dashboardFunctions.toggleBookmark = toggleBookmark;
+window.dashboardFunctions.openNotesModal = openNotesModal;
+window.dashboardFunctions.saveNotesFromModal = saveNotesFromModal;
+window.dashboardFunctions.addSnippetFromModal = addSnippetFromModal;
+window.dashboardFunctions.deleteSnippetFromModal = deleteSnippetFromModal;
+window.dashboardFunctions.toggleRevisionQueue = toggleRevisionQueue;
 
 // Also make openDashboard globally accessible for onclick handlers
 window.openDashboard = openDashboard;
+
+console.log('✅ Dashboard functions exported and ready:', Object.keys(window.dashboardFunctions));

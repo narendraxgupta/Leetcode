@@ -34,6 +34,24 @@ const solvedProblemSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  // Code snippets for solutions
+  codeSnippets: [
+    {
+      title: { type: String, default: 'Solution' },
+      language: { type: String, default: 'javascript' },
+      code: { type: String, default: '' },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  // Revision queue flag and optional next review date
+  inRevisionQueue: {
+    type: Boolean,
+    default: false
+  },
+  nextReview: {
+    type: Date,
+    default: null
+  },
   timeSpent: {
     type: Number, // in minutes
     default: 0

@@ -101,7 +101,14 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} in your browser`);
-});
+
+// Only start server if not in Vercel environment
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Open http://localhost:${PORT} in your browser`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
