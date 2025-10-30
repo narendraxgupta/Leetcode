@@ -47,11 +47,16 @@
   <div class="container mx-auto px-4">
     <!-- Auth Section -->
     <div id="auth-section" class="flex justify-between items-center py-4">
-      <div>
+      <div class="flex items-center space-x-3">
         <button id="background-settings-btn"
           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center space-x-2">
           <i data-feather="image"></i>
           <span>Background</span>
+        </button>
+        <button id="dashboard-btn"
+          class="hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center space-x-2">
+          <i data-feather="bar-chart-2"></i>
+          <span>Dashboard</span>
         </button>
       </div>
       <div class="flex items-center space-x-3">
@@ -978,6 +983,90 @@
     </div>
   </div>
 
+  <!-- Dashboard Modal -->
+  <div id="dashboard-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+      <span class="close" onclick="closeModal('dashboard-modal')">&times;</span>
+      <h2 class="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        📊 Your Progress Dashboard
+      </h2>
+
+      <!-- Loading State -->
+      <div id="dashboard-loading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <p class="text-gray-400 mt-4">Loading your statistics...</p>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div id="dashboard-content" class="hidden">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg p-6 text-center">
+            <div class="text-3xl font-bold" id="stat-total">0</div>
+            <div class="text-sm opacity-90 mt-1">Total Solved</div>
+            <i data-feather="check-circle" class="mx-auto mt-2 w-8 h-8"></i>
+          </div>
+          <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg p-6 text-center">
+            <div class="text-3xl font-bold" id="stat-streak">0</div>
+            <div class="text-sm opacity-90 mt-1">Current Streak</div>
+            <i data-feather="zap" class="mx-auto mt-2 w-8 h-8"></i>
+          </div>
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg p-6 text-center">
+            <div class="text-3xl font-bold" id="stat-bookmarked">0</div>
+            <div class="text-sm opacity-90 mt-1">Bookmarked</div>
+            <i data-feather="bookmark" class="mx-auto mt-2 w-8 h-8"></i>
+          </div>
+          <div class="bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg p-6 text-center">
+            <div class="text-3xl font-bold" id="stat-longest">0</div>
+            <div class="text-sm opacity-90 mt-1">Longest Streak</div>
+            <i data-feather="award" class="mx-auto mt-2 w-8 h-8"></i>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Progress Over Time -->
+          <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i data-feather="trending-up" class="mr-2 w-5 h-5"></i>
+              Progress Over Time (30 Days)
+            </h3>
+            <canvas id="progress-chart"></canvas>
+          </div>
+
+          <!-- Difficulty Distribution -->
+          <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i data-feather="pie-chart" class="mr-2 w-5 h-5"></i>
+              Difficulty Distribution
+            </h3>
+            <canvas id="difficulty-chart"></canvas>
+          </div>
+
+          <!-- Top Companies -->
+          <div class="bg-gray-800 rounded-lg p-6 lg:col-span-2">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i data-feather="bar-chart-2" class="mr-2 w-5 h-5"></i>
+              Top 10 Companies
+            </h3>
+            <canvas id="company-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Recently Solved -->
+        <div class="bg-gray-800 rounded-lg p-6 mt-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i data-feather="clock" class="mr-2 w-5 h-5"></i>
+            Recently Solved
+          </h3>
+          <div id="recently-solved-list" class="space-y-2">
+            <!-- Will be populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <br />
   <div>
     <footer class="text-center py-4 text-white-400">
@@ -990,6 +1079,7 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="dashboard.js"></script>
   <script>
     feather.replace();
   </script>

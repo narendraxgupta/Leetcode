@@ -6,6 +6,14 @@ const sortSelect = document.getElementById("sort-select");
 const difficultyFilter = document.getElementById("difficulty-filter");
 const currentSelection = document.getElementById("current-selection");
 
+// Helper function to get current company and duration selection
+function getCurrentSelection() {
+  return {
+    company: companySelect.value,
+    duration: durationSelect.value
+  };
+}
+
 // Event listener to handle the dropdown selection
 document.addEventListener("DOMContentLoaded", function () {
   fetch("company_data.json")
@@ -129,8 +137,8 @@ function displayTable(csvData, sort, difficulty) {
   // console.log("Rows", rows);
   // Extract the header row
   const header = rows.shift();
-  rows.unshift(header + ",Attempted?,Date Solved");
-  // header += ",Attempted,Date Solved";
+  rows.unshift(header + ",Attempted?,Date Solved,Mark Solved");
+  // header += ",Attempted,Date Solved,Mark Solved";
 
   // console.log("Header", header);
   // Sort rows if sort option is provided
@@ -157,6 +165,7 @@ function displayTable(csvData, sort, difficulty) {
     if (index > 0) {
       cells.push(""); // For 'Attempted' checkbox
       cells.push(""); // For 'Date Solved' input
+      cells.push(""); // For 'Mark Solved' button
     }
 
     cells.forEach((cell, cellIndex) => {
@@ -168,13 +177,16 @@ function displayTable(csvData, sort, difficulty) {
         cellElement.style.color = "white";
       }
 
-      if (index === 0 && cellIndex === cells.length - 2) {
+      if (index === 0 && cellIndex === cells.length - 3) {
         // Set text for 'Attempted' header
         cellElement.textContent = "Attempted?";
-      } else if (index === 0 && cellIndex === cells.length - 1) {
-        // Set text for 'Attempted' header
+      } else if (index === 0 && cellIndex === cells.length - 2) {
+        // Set text for 'Date Solved' header
         cellElement.textContent = "Date Solved";
-      } else if (index > 0 && cellIndex === cells.length - 2) {
+      } else if (index === 0 && cellIndex === cells.length - 1) {
+        // Set text for 'Mark Solved' header
+        cellElement.textContent = "Mark Solved";
+      } else if (index > 0 && cellIndex === cells.length - 3) {
         // Checkbox for 'Attempted'
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
@@ -257,7 +269,7 @@ function displayTable(csvData, sort, difficulty) {
         label.classList.add("inline-flex", "justify-center", "items-center");
         label.appendChild(checkbox);
         cellElement.appendChild(label);
-      } else if (index > 0 && cellIndex === cells.length - 1) {
+      } else if (index > 0 && cellIndex === cells.length - 2) {
         // Input for 'Date Solved'
         const dateInput = document.createElement("input");
         dateInput.type = "text";
@@ -281,6 +293,99 @@ function displayTable(csvData, sort, difficulty) {
         });
 
         cellElement.appendChild(dateInput);
+      } else if (index > 0 && cellIndex === cells.length - 1) {
+        // Button for 'Mark Solved'
+        const button = document.createElement("button");
+        button.id = `solved-${cells[0]}`;
+        button.classList.add("bg-green-600", "hover:bg-green-700", "text-white", "px-3", "py-1", "rounded", "text-sm", "font-semibold", "transition");
+        
+        // Check if problem is already marked as solved
+        let isSolved = false;
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        if (token && window.solvedProblems && Array.isArray(window.solvedProblems)) {
+          isSolved = window.solvedProblems.some(p => p.problemId === cells[0]);
+        }
+        
+        if (isSolved) {
+          button.textContent = "✓ Solved";
+          button.classList.remove("bg-green-600", "hover:bg-green-700");
+          button.classList.add("bg-gray-600", "hover:bg-gray-700");
+        } else {
+          button.textContent = "Mark Solved";
+        }
+        
+        // Only show button for authenticated users
+        if (!token) {
+          button.disabled = true;
+          button.classList.add("opacity-50", "cursor-not-allowed");
+          button.title = "Login to track progress";
+        }
+        
+        button.addEventListener("click", async function () {
+          // Check if user is authenticated
+          const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+          if (!token) {
+            if (typeof showNotification !== 'undefined') {
+              showNotification('Please login to track your progress', 'error');
+            } else {
+              alert('Please login to track your progress');
+            }
+            return;
+          }
+          
+          // Check if dashboard functions are available
+          if (!window.dashboardFunctions || !window.dashboardFunctions.markProblemAsSolved) {
+            console.error('Dashboard functions not loaded');
+            if (typeof showNotification !== 'undefined') {
+              showNotification('Dashboard functions not loaded. Please refresh the page.', 'error');
+            }
+            return;
+          }
+          
+          const problemId = cells[0];
+          const title = cells[2];
+          const difficulty = cells[3];
+          const leetcodeLink = cells[1];
+          const { company, duration } = getCurrentSelection();
+          
+          if (this.textContent === "Mark Solved") {
+            // Mark as solved
+            const success = await window.dashboardFunctions.markProblemAsSolved({
+              problemId,
+              title,
+              difficulty,
+              company,
+              duration,
+              leetcodeLink
+            });
+            
+            if (success) {
+              this.textContent = "✓ Solved";
+              this.classList.remove("bg-green-600", "hover:bg-green-700");
+              this.classList.add("bg-gray-600", "hover:bg-gray-700");
+              
+              // Update solved problems list
+              if (!window.solvedProblems) window.solvedProblems = [];
+              window.solvedProblems.push({ problemId, title, difficulty, company, duration });
+            }
+          } else {
+            // Unmark as solved
+            const success = await window.dashboardFunctions.unmarkProblemAsSolved(problemId);
+            
+            if (success) {
+              this.textContent = "Mark Solved";
+              this.classList.remove("bg-gray-600", "hover:bg-gray-700");
+              this.classList.add("bg-green-600", "hover:bg-green-700");
+              
+              // Remove from solved problems list
+              if (window.solvedProblems) {
+                window.solvedProblems = window.solvedProblems.filter(p => p.problemId !== problemId);
+              }
+            }
+          }
+        });
+
+        cellElement.appendChild(button);
       } else if (index > 0 && cellIndex === 1) {
         // Handling link cells (URL is now at index 1)
         cellElement.style.display = "flex";

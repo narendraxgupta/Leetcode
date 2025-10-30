@@ -236,6 +236,13 @@ function showUserInfo() {
   userInfo.classList.remove('hidden');
   userInfo.classList.add('flex');
   
+  // Show dashboard button
+  const dashboardBtn = document.getElementById('dashboard-btn');
+  if (dashboardBtn) {
+    dashboardBtn.classList.remove('hidden');
+    dashboardBtn.classList.add('flex');
+  }
+  
   // Hide username display, only show avatar
   const usernameDisplay = document.getElementById('username-display');
   if (usernameDisplay) {
@@ -255,6 +262,13 @@ function showAuthButtons() {
   const userInfo = document.getElementById('user-info');
   userInfo.classList.add('hidden');
   userInfo.classList.remove('flex');
+  
+  // Hide dashboard button
+  const dashboardBtn = document.getElementById('dashboard-btn');
+  if (dashboardBtn) {
+    dashboardBtn.classList.add('hidden');
+    dashboardBtn.classList.remove('flex');
+  }
 }
 
 // Load user progress from server
@@ -268,14 +282,24 @@ async function loadUserProgress() {
       }
     });
     
-    const data = await response.json();
-    
-    if (data.success) {
-      // Store progress in memory for quick access
-      window.userProgress = data.progress;
+    if (response.ok) {
+      const data = await response.json();
+      window.userProgress = data.progress || [];
       
       // Update current table if one is displayed
       updateTableWithProgress();
+    }
+    
+    // Also load solved problems for the dashboard
+    const solvedResponse = await fetch(`${API_BASE_URL}/progress/solved-problems`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    
+    if (solvedResponse.ok) {
+      const solvedData = await solvedResponse.json();
+      window.solvedProblems = solvedData.problems || [];
     }
   } catch (error) {
     console.error('Load progress error:', error);
