@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "leeco/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "leeco/server.js"
+    },
+    {
+      "src": "/(.*\\.(html|css|js|json|png|svg|jpg|jpeg|gif|ico|webp))",
+      "dest": "leeco/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "leeco/index.html"
+    }
+  ]
+}
